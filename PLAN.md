@@ -1,63 +1,86 @@
- # Crew & Passenger List PWA — план
+# Crew & Passenger List PWA — план
 
-## Context
+## 1. Контекст и назначение
 
-Компания All About Boat Charters (база — Синт-Мартен / SXM) водит 10 лодок,
-экипаж — 6 капитанов и 6 помощников (планируется рост). Для каждого рейса нужно
-подать в иммиграционную службу документ **«Crew and Passenger List»**. Сейчас его
-делают вручную: фото паспортов → извлечение данных → таблица. Приложение
-автоматизирует это.
+Компания **All About Boat Charters** (база — Синт-Мартен / SXM) водит 10 лодок.
+Экипаж — 6 капитанов и 6 помощников (планируется рост). Для каждого рейса нужно
+подать в иммиграционную службу документ **«Crew and Passenger List»**.
 
-Требования:
-- Открывается с телефона как **PWA** (iPhone и Android). Локально, без своего
-  домена и бэкенда. Все данные — на устройстве (один общий телефон на весь парк).
-- Экран 1 — выбор лодки. Далее 3 действия: **добавить паспорт** (камера),
-  **сделать Passenger list**, **история**.
-- Распознавание паспорта — **Claude vision**, вызов напрямую из браузера
-  (ключ Anthropic вводится один раз в настройках).
+Сейчас его делают вручную: фото паспортов → извлечение данных → таблица.
+Приложение автоматизирует весь цикл: снимок паспорта → распознавание через
+Claude vision → готовый XLSX строго по образцу.
+
+## 2. Требования
+
+**Платформа и данные**
+- Открывается с телефона как **PWA** (iPhone и Android). Работает локально, без
+  собственного домена и бэкенда.
+- Все данные хранятся **на устройстве** (один общий телефон на весь парк).
+
+**Основные экраны**
+- Экран 1 — выбор лодки.
+- Далее 3 действия: **добавить паспорт** (камера), **сделать Passenger list**,
+  **история**.
+
+**Распознавание**
+- Паспорт распознаёт **Claude vision**, вызов напрямую из браузера. Ключ
+  Anthropic вводится один раз в настройках.
+
+**Документ**
 - Готовый документ — **XLSX** строго по образцу.
+
+**Жизненный цикл данных**
 - Через **72 часа** сканы паспортов самоудаляются и не попадают в следующие
-  списки. Passenger list в истории хранится **бессрочно**.
-- В один день у лодки может быть несколько списков; паспорт, уже попавший в один
-  список, в следующий не включается (дедуп по **номеру паспорта**).
+  списки. Готовые Passenger list в истории хранятся **бессрочно**.
+- В один день у лодки может быть несколько списков. Паспорт, уже попавший в один
+  список, в следующий не включается (**дедуп по номеру паспорта**).
 - История — все списки с **группировкой по дням**.
 
-Репозиторий: `/Users/boatcharters/PLAPP` (GitHub `allaboutboatcharters/PLAPP`),
-сейчас пустой (только `LICENSE`). Всё строится с нуля. Копию этого плана положить
-в `PLAPP/PLAN.md`.
+**Репозиторий**
+- `/Users/boatcharters/PLAPP` (GitHub `allaboutboatcharters/PLAPP`), сейчас
+  пустой (только `LICENSE`). Всё строится с нуля.
+- Копия этого плана лежит в `PLAPP/PLAN.md`.
 
-## Образец документа (разобран)
+## 3. Образец документа (разобран)
 
 Файл: `.../CloudDocs/Crew and Passenger List Becquard Radosevich.xlsx`
 Лист `Crew and Passenger List`, диапазон `A1:K37`.
 
+**Заголовок**
 - `A1:J2` объединено — «CREW AND PASSENGER LIST», Arial Black 26, bold, слева,
   вертикально по центру.
-- Строка 3 — заголовки колонок (Arial 11): `A`(пусто, №) · `B` Last Name ·
-  `C` First Name · `D` Date of birth · `E` Place of birth · `F` Nationality ·
-  `G` Issue date · `H` Expiration date · `I` Pasp nr. · `J` Rank · `K` Remarks.
-- Строки данных (Arial 10):
-  - `A` — порядковый номер. **Экипаж нумеруется 1–2, пассажиры — заново с 1.**
-  - `B/C` — фамилия / имя(имена), КАПСОМ.
-  - `D` — дата рождения, формат `18 MAR 2002` (DD MON YYYY, англ. месяц капсом).
-  - `E` — место рождения как в паспорте (`CALIFORNIA, USA`).
-  - `F` — гражданство как в паспорте (`UNITED STATES OF AMERICA`, `FRANCAISE`).
-  - `G/H` — дата выдачи / окончания паспорта, тот же формат даты.
-  - `I` — номер паспорта.
-  - `J` — Rank: `CAPTAIN`, `CREW`, `Passenger`.
-  - `K` — Remarks: у экипажа `SXM`; у пассажиров — место проживания
-    (`Sonesta`, `Divi Resort`, …), **у каждого своё**.
+
+**Строка 3 — заголовки колонок** (Arial 11):
+`A` (пусто, №) · `B` Last Name · `C` First Name · `D` Date of birth ·
+`E` Place of birth · `F` Nationality · `G` Issue date · `H` Expiration date ·
+`I` Pasp nr. · `J` Rank · `K` Remarks.
+
+**Строки данных** (Arial 10):
+- `A` — порядковый номер. **Экипаж нумеруется 1–2, пассажиры — заново с 1.**
+- `B/C` — фамилия / имя(имена), КАПСОМ.
+- `D` — дата рождения, формат `18 MAR 2002` (DD MON YYYY, англ. месяц капсом).
+- `E` — место рождения как в паспорте (`CALIFORNIA, USA`).
+- `F` — гражданство как в паспорте (`UNITED STATES OF AMERICA`, `FRANCAISE`).
+- `G/H` — дата выдачи / окончания паспорта, тот же формат даты.
+- `I` — номер паспорта.
+- `J` — Rank: `CAPTAIN`, `CREW`, `Passenger`.
+- `K` — Remarks: у экипажа `SXM`; у пассажиров — место проживания
+  (`Sonesta`, `Divi Resort`, …), **у каждого своё**.
+
+**Оформление**
 - Ширины колонок: A4 · B16 · C22 · D13 · E20 · F14 · G13 · H15 · I14 · J12 · K22.
 - Футер: объединённые `A34:I34`, `A35:I35`, `A36:I36` — юридический текст
   «In adherence to article 15 (1)(a)(b)(c)(d) and article 15 (2) of the
   Toelatingsbesluit…» (вставляется дословно, всегда).
+
+**Важно про имя файла**
 - В самом файле нет ни названия лодки, ни даты рейса.
 - **Имя генерируемого файла — всегда `Crew and Passenger List.xlsx`** (без фамилий
-  экипажа, без лодки/даты). В образце фамилии в имени были, но так делать не надо.
+  экипажа, без лодки/даты). В образце фамилии в имени были — так делать не надо.
 
-Точные границы/отступы ячеек сверить с файлом при реализации модуля генерации.
+> Точные границы/отступы ячеек сверить с файлом при реализации модуля генерации.
 
-## Согласованные решения
+## 4. Согласованные решения
 
 - Имя выгружаемого файла — всегда `Crew and Passenger List.xlsx`.
 - Данные экипажа (полный паспортный набор + Remarks по умолчанию `SXM`) вводятся
@@ -68,77 +91,105 @@
 - Remarks пассажира вводится/правится **по каждому** при проверке скана.
 - Фреймворк — **Vue 3** (не React).
 
-## Стек
+## 5. Технологический стек
 
+**Сборка и ядро**
 - **Vite + Vue 3 (`<script setup>`) + TypeScript**, сборка в статику.
 - **vue-router** (hash-free history), **Pinia** (состояние).
+
+**Хранение**
 - **Dexie.js** (IndexedDB) — данные + блобы фото и готовых XLSX.
-- **ExcelJS** — генерация XLSX (объединённые ячейки, Arial Black, ширины) —
-  изолированный модуль `src/lib/passengerListWorkbook.ts`.
+
+**Генерация документа**
+- **ExcelJS** — XLSX (объединённые ячейки, Arial Black, ширины). Изолированный
+  модуль `src/lib/passengerListWorkbook.ts`.
+
+**PWA**
 - **vite-plugin-pwa** (Workbox) — манифест, service worker, устанавливаемость,
   офлайн-оболочка. `navigator.storage.persist()` при первом запуске.
-- **Камера**: `<input type="file" accept="image/*" capture="environment">`
-  (надёжно на iOS и Android). Сжатие через `canvas` (~1600 px, JPEG).
-- **Claude API**: `fetch` → `https://api.anthropic.com/v1/messages`, заголовки
-  `x-api-key`, `anthropic-version: 2023-06-01`,
-  `anthropic-dangerous-direct-browser-access: true`. Модель `claude-sonnet-5`,
-  структурный вывод через `tool_use`: `lastName, firstName, dateOfBirth,
-  placeOfBirth, nationality, issueDate, expirationDate, passportNumber`
-  (+ MRZ как перекрёстная сверка). Заметка о стоимости ~$0.01–0.03 за фото.
-- **Стили**: mobile-first CSS + CSS-переменные, крупные кнопки. Без UI-фреймворка.
-- **Хостинг**: Cloudflare Pages / GitHub Pages (бесплатный `*.pages.dev`,
-  HTTPS обязателен для камеры/PWA). Данные телефон не покидают.
 
-## Модель данных (Dexie)
+**Камера**
+- `<input type="file" accept="image/*" capture="environment">` (надёжно на iOS и
+  Android). Сжатие через `canvas` (~1600 px, JPEG).
 
-- `settings` (singleton): `apiKey`, `model`, `crewRemarkDefault='SXM'`,
+**Claude API**
+- `fetch` → `https://api.anthropic.com/v1/messages`.
+- Заголовки: `x-api-key`, `anthropic-version: 2023-06-01`,
+  `anthropic-dangerous-direct-browser-access: true`.
+- Модель `claude-sonnet-5`, структурный вывод через `tool_use`:
+  `lastName, firstName, dateOfBirth, placeOfBirth, nationality, issueDate,
+  expirationDate, passportNumber` (+ MRZ как перекрёстная сверка).
+- Системный промпт — по спецификации в разделе 11. Стоимость ~$0.01–0.03 за фото.
+
+**Стили**
+- Mobile-first CSS + CSS-переменные, крупные кнопки. Без UI-фреймворка.
+
+**Запуск и тестирование (свой домен НЕ нужен)**
+- Камера и PWA работают только в secure context. Домен для этого не требуется:
+  - **Разработка на Mac**: `npm run dev` → `http://localhost` считается безопасным
+    → камера, service worker и установка PWA работают без HTTPS и без домена.
+  - **Тест на реальном телефоне**: `localhost` не подойдёт, нужен HTTPS. Варианты:
+    - **HTTPS в локальной сети**: `vite --host` + `@vitejs/plugin-basic-ssl`;
+      телефон открывает `https://<IP-мака>:5173` (один раз принять сертификат).
+    - **Бесплатный поддомен**: Cloudflare Pages `*.pages.dev` / GitHub Pages
+      `*.github.io` — не свой домен, а бесплатный адрес с готовым HTTPS. Удобно
+      поставить «на Домой» и погонять на iPhone/Android.
+- Данные телефон не покидают в любом варианте — приложение полностью локальное.
+
+## 6. Модель данных (Dexie)
+
+- **`settings`** (singleton): `apiKey`, `model`, `crewRemarkDefault='SXM'`,
   `filenamePrefix='Crew and Passenger List'`, `storagePersisted`.
-- `boats`: `id`, `name`, `sortOrder`, `active`.
-- `crew`: `id`, `role` `'captain'|'assistant'`, `lastName`, `firstName`,
+- **`boats`**: `id`, `name`, `sortOrder`, `active`.
+- **`crew`**: `id`, `role` `'captain'|'assistant'`, `lastName`, `firstName`,
   `dateOfBirth`, `placeOfBirth`, `nationality`, `issueDate`, `expirationDate`,
   `passportNumber`, `remark='SXM'`, `active`, `sortOrder`.
-- `passportScans`: `id`, `boatId`, `capturedAt`, `expiresAt` (`capturedAt+72ч`),
-  `imageBlob`, `status` `'pending'|'ready'|'error'`, `errorMsg`,
-  `extracted{…8 полей…}`, `remark` (жильё, правится), `usedInListId|null`.
-- `passengerLists`: `id`, `boatId`, `boatName`, `date` (YYYY-MM-DD), `createdAt`,
-  `captainId`, `assistantId`, `crewRows[]` (снимок), `passengers[]` (снимок,
-  вкл. `remark`), `crewCount`, `passengerCount`, `fileName`, `xlsxBlob`.
+- **`passportScans`**: `id`, `boatId`, `capturedAt`, `expiresAt`
+  (`capturedAt+72ч`), `imageBlob`, `status` `'pending'|'ready'|'error'`,
+  `errorMsg`, `extracted{…8 полей…}`, `remark` (жильё, правится),
+  `usedInListId|null`.
+- **`passengerLists`**: `id`, `boatId`, `boatName`, `date` (YYYY-MM-DD),
+  `createdAt`, `captainId`, `assistantId`, `crewRows[]` (снимок), `passengers[]`
+  (снимок, вкл. `remark`), `crewCount`, `passengerCount`, `fileName`, `xlsxBlob`.
 
-## Экраны (маршруты)
+## 7. Экраны (маршруты)
 
-- `/` — **BoatPicker**: сетка лодок + иконка настроек.
-- `/boat/:id` — **BoatHome**: 3 крупные кнопки; счётчик «готовых сканов для этой
+- **`/` — BoatPicker**: сетка лодок + иконка настроек.
+- **`/boat/:id` — BoatHome**: 3 крупные кнопки; счётчик «готовых сканов для этой
   лодки».
-- `/boat/:id/capture` — **CapturePassport**: снимок → сжатие → Claude → карточка
+- **`/boat/:id/capture` — CapturePassport**: снимок → сжатие → Claude → карточка
   с извлечёнными полями (все правятся) + поле Remarks (жильё) → сохранить скан →
   «сделать ещё» / «готово».
-- `/boat/:id/new-list` — **CreateList**: выбор капитана и помощника (выпадающие из
+- **`/boat/:id/new-list` — CreateList**: выбор капитана и помощника (выпадающие из
   `crew`); список кандидатов-сканов (boat совпадает, `status='ready'`,
   `now<expiresAt`, `usedInListId==null`, номер паспорта не встречается в
   `passengers[]` прежних списков этой лодки за ту же дату); чекбоксы, все выбраны;
   дедуп по номеру паспорта. «Сформировать» → строки: 2 экипажа + пассажиры →
   `passengerListWorkbook` → запись в `passengerLists` (+ `xlsxBlob`, `fileName`) →
-  выбранным сканам `usedInListId`. Затем «Поделиться» (Web Share API с файлом;
-  фолбэк — скачивание) и «Готово».
-- `/history` — **History**: все списки, группировка по дням (заголовки-даты,
+  выбранным сканам проставить `usedInListId`. Затем «Поделиться» (Web Share API с
+  файлом; фолбэк — скачивание) и «Готово».
+- **`/history` — History**: все списки, группировка по дням (заголовки-даты,
   свежие сверху), карточки: лодка · время · капитан+помощник · число пассажиров ·
   [Поделиться] [Открыть]. Фильтр по лодке.
-- `/history/:listId` — **ListDetail**: таблица экипажа+пассажиров, повторная
+- **`/history/:listId` — ListDetail**: таблица экипажа+пассажиров, повторная
   выгрузка/Поделиться из сохранённого `xlsxBlob`.
-- `/settings` — **Settings**: вкладки «Лодки», «Экипаж» (полные паспортные поля +
+- **`/settings` — Settings**: вкладки «Лодки», «Экипаж» (полные паспортные поля +
   «заполнить по фото»), «API-ключ».
 
-## 72-часовое удаление
+## 8. 72-часовое удаление сканов
 
-При старте приложения и на `visibilitychange`: удалить `passportScans` где
-`expiresAt < now` (ряд вместе с блобом), независимо от того, попал ли скан в
-список — данные уже зафиксированы снимком в `passengerLists`. Дополнительно
-«эффективный» фильтр: скан старше 72 ч не показывается и не участвует в выборе,
-даже если чистка ещё не отработала. `passengerLists` не трогаются никогда.
-Ограничение iOS (нет фоновых задач) — чистка только при открытии; отметить в
-README.
+При старте приложения и на `visibilitychange`:
+- Удалить `passportScans` где `expiresAt < now` (ряд вместе с блобом), независимо
+  от того, попал ли скан в список — данные уже зафиксированы снимком в
+  `passengerLists`.
+- Дополнительно «эффективный» фильтр: скан старше 72 ч не показывается и не
+  участвует в выборе, даже если чистка ещё не отработала.
+- `passengerLists` **не трогаются никогда**.
 
-## Структура проекта
+> Ограничение iOS (нет фоновых задач) — чистка только при открытии; отметить в
+> README.
+
+## 9. Структура проекта
 
 ```
 PLAPP/
@@ -146,35 +197,86 @@ PLAPP/
   public/            иконки
   src/
     main.ts  App.vue  router.ts
-    stores/         settings, boats, crew, scans, lists (Pinia)
-    db/             dexie.ts, cleanup.ts
-    lib/            claude.ts, passportImage.ts, passengerListWorkbook.ts,
-                    formatters.ts (даты DD MON YYYY, КАПС), share.ts
-    views/          BoatPicker, BoatHome, CapturePassport, CreateList,
-                    History, ListDetail, Settings (.vue)
-    components/      ScanReviewCard, CrewForm, BoatGrid, DayGroup, …
+    stores/          settings, boats, crew, scans, lists (Pinia)
+    db/              dexie.ts, cleanup.ts
+    lib/             claude.ts, passportImage.ts, passengerListWorkbook.ts,
+                     formatters.ts (даты DD MON YYYY, КАПС), share.ts
+    views/           BoatPicker, BoatHome, CapturePassport, CreateList,
+                     History, ListDetail, Settings (.vue)
+    components/       ScanReviewCard, CrewForm, BoatGrid, DayGroup, …
   PLAN.md
 ```
 
-## Порядок работ
+## 10. Порядок работ
 
-1. Каркас: Vite+Vue+TS, vite-plugin-pwa, router, Pinia, Dexie-схема, мобильный
-   layout + навигация, `storage.persist()`.
-2. Settings: CRUD лодок; CRUD экипажа (полные паспортные поля + «заполнить по
+1. **Каркас**: Vite+Vue+TS, vite-plugin-pwa, router, Pinia, Dexie-схема,
+   мобильный layout + навигация, `storage.persist()`.
+2. **Settings**: CRUD лодок; CRUD экипажа (полные паспортные поля + «заполнить по
    фото» через `claude.ts`); ввод API-ключа.
-3. BoatPicker + BoatHome.
-4. CapturePassport: камера → сжатие → `claude.ts` → `ScanReviewCard` (правка всех
-   полей + Remarks) → сохранение скана.
-5. `passengerListWorkbook.ts` — точная копия образца (сверить дампом openpyxl с
-   исходным файлом: заголовки, объединения, ширины, футер, форматы дат) +
+3. **BoatPicker + BoatHome**.
+4. **CapturePassport**: камера → сжатие → `claude.ts` → `ScanReviewCard` (правка
+   всех полей + Remarks) → сохранение скана.
+5. **`passengerListWorkbook.ts`** — точная копия образца (сверить дампом openpyxl
+   с исходным файлом: заголовки, объединения, ширины, футер, форматы дат) +
    CreateList с логикой дедупа/фильтра и генерацией.
-6. History + ListDetail (группировка по дням, фильтр по лодке, повторная
+6. **History + ListDetail** (группировка по дням, фильтр по лодке, повторная
    выгрузка/Поделиться).
-7. Задача 72-часовой чистки + эффективная фильтрация.
-8. Иконки/манифест, деплой на Cloudflare Pages (или GitHub Pages), прогон
-   верификации на реальных iPhone и Android.
+7. **Задача 72-часовой чистки** + эффективная фильтрация.
+8. **Деплой**: иконки/манифест, деплой на Cloudflare Pages (или GitHub Pages),
+   прогон верификации на реальных iPhone и Android.
 
-## Верификация (end-to-end)
+## 11. Промпт распознавания паспортов
+
+Системный промпт для Claude vision при обработке фото паспортов (`claude.ts`).
+Полная копия — в файле `passport_recognition_prompt.md` и в скилле
+`passport-recognition`.
+
+**Роль**
+Агент распознавания документов (паспорт, паспортная карта, national ID).
+Извлекает данные точно, без домыслов, в заданном формате.
+
+**Поля вывода**
+`Last Name` · `First Name` · `DOB` (ДД.ММ.ГГГГ) · `Place of Birth` ·
+`Nationality` · `Document Type` · `Passport/Card No.` · `Date of Issue`
+(ДД.ММ.ГГГГ) · `Date of Expiry` (ДД.ММ.ГГГГ) · `Sex` (M/F) · `Confidence Flags`.
+
+**Нормализация**
+
+*Nationality:*
+- США → "USA", Нидерланды → "NLD", Канада → "Canada"
+- Остальные — краткое англ. прилагательное (Dominican, Ghanaian, Mexican…)
+
+*Place of Birth:*
+- US / Russia / France → только страна ("USA", "Russia", "France"), даже если
+  в паспорте город/штат
+- Все остальные — как напечатано в документе (verbatim)
+
+*Names:*
+- Составные фамилии — ровно как в поле Surname (дефисы, "de", "van", "Mc")
+- Приоритет печатного текста над MRZ при расхождении
+
+*Dates:* всегда ДД.ММ.ГГГГ
+
+**MRZ**
+- Вторичный контрольный источник.
+- Если печатный текст не читается, а MRZ чёткий → взять из MRZ, пометить
+  «восстановлено по MRZ» в Confidence Flags.
+- Если MRZ ≠ печатный текст → оба варианта + «требует проверки».
+
+**Проблемные фото**
+1. Нечитаемое поле → «НЕ ЧИТАЕТСЯ» + Confidence Flags.
+2. Две фото одного документа → одна запись.
+3. Фото — не документ → сообщить, не выдумывать.
+4. Несколько разных паспортов → отдельная запись на каждого, в порядке фото.
+5. Passport ≠ Passport Card (разные типы, разные номера).
+
+**Запрещено**
+- Дополнять/«причёсывать» Place of Birth.
+- Переводить имена на другой язык/алфавит.
+- Ставить прочерк или предположение вместо «НЕ ЧИТАЕТСЯ».
+- Путать Document Number и Passport Card no.
+
+## 12. Верификация (end-to-end)
 
 1. `npm run dev`; открыть в Chrome (эмуляция телефона) и на реальных телефонах
    через деплой.
@@ -194,7 +296,7 @@ PLAPP/
 8. «Поделиться» на реальных iPhone и Android.
 9. Lighthouse / установка «на экран Домой», офлайн-запуск оболочки.
 
-## Открытые мелочи (уточнить по ходу, не блокеры)
+## 13. Открытые мелочи (уточнить по ходу, не блокеры)
 
 - Названия 10 лодок и ФИО экипажа — вводит пользователь в Settings при первом
   запуске (либо пришлёт списком — добавлю как сид).
