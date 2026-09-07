@@ -1,11 +1,15 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
+import basicSsl from '@vitejs/plugin-basic-ssl'
+
+const useSsl = process.env.VITE_SSL === '1' || process.argv.includes('--host')
 
 export default defineConfig({
   base: './',
   plugins: [
     vue(),
+    ...(useSsl ? [basicSsl()] : []),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],

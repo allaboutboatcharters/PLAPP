@@ -4,6 +4,8 @@ import { useRouter } from 'vue-router'
 import { useSettingsStore } from '../stores/settings'
 import { useBoatsStore } from '../stores/boats'
 import { useCrewStore } from '../stores/crew'
+import { compressImage } from '../lib/passportImage'
+import { recognizePassport } from '../lib/claude'
 import type { Crew, CrewRole } from '../db/dexie'
 
 const router = useRouter()
@@ -40,6 +42,40 @@ async function saveCrew(c: Crew) {
   if (c.id == null) return
   const { id, ...patch } = c
   await crewStore.update(id, patch)
+}
+
+const fillInput = ref<HTMLInputElement | null>(null)
+const fillingId = ref<number | null>(null)
+const fillError = ref('')
+let pendingCrewId: number | null = null
+
+function fillByPhoto(c: Crew) {
+  pendingCrewId = c.id ?? null
+  fillError.value = ''
+  fillInput.value?.click()
+}
+
+async function onFillFile(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  const id = pendingCrewId
+  if (!file || id == null) return
+  fillingId.value = id
+  try {
+    const s = await settingsStore.load()
+    const { base64 } = await compressImage(file)
+    const r = await recognizePassport([base64], { apiKey: s.apiKey, model: s.model })
+    await crewStore.update(id, {
+      lastName: r.lastName, firstName: r.firstName, dateOfBirth: r.dateOfBirth,
+      placeOfBirth: r.placeOfBirth, nationality: r.nationality,
+      issueDate: r.issueDate, expirationDate: r.expirationDate, passportNumber: r.passportNumber
+    })
+  } catch (err) {
+    fillError.value = (err as Error).message
+  } finally {
+    fillingId.value = null
+    pendingCrewId = null
+    if (fillInput.value) fillInput.value.value = ''
+  }
 }
 
 // --- api ---
@@ -89,15 +125,27 @@ onMounted(async () => {
 
     <!-- CREW -->
     <section v-if="tab === 'crew'">
+      <input
+        ref="fillInput"
+        type="file"
+        accept="image/*"
+        capture="environment"
+        style="display: none"
+        @change="onFillFile"
+      />
       <div class="row">
         <button class="secondary" @click="addCrew('captain')">+ Капитан</button>
         <button class="secondary" @click="addCrew('assistant')">+ Помощник</button>
       </div>
+      <div v-if="fillError" class="card" style="border-color: var(--danger)">{{ fillError }}</div>
       <div v-for="c in crewStore.crew" :key="c.id" class="card stack">
         <div class="row" style="justify-content: space-between">
           <span class="badge">{{ c.role === 'captain' ? 'CAPTAIN' : 'CREW' }}</span>
           <button class="danger" style="width: auto" @click="crewStore.remove(c.id!)">✕</button>
         </div>
+        <button class="ghost" :disabled="fillingId === c.id" @click="fillByPhoto(c)">
+          {{ fillingId === c.id ? 'Распознаю…' : '📷 Заполнить по фото паспорта' }}
+        </button>
         <div v-for="f in crewFields" :key="String(f.key)">
           <label>{{ f.label }}</label>
           <input v-model="(c as any)[f.key]" @change="saveCrew(c)" />
@@ -106,9 +154,6 @@ onMounted(async () => {
           <label>Remarks (по умолчанию SXM)</label>
           <input v-model="c.remark" @change="saveCrew(c)" />
         </div>
-        <p class="muted" style="font-size: 0.8rem">
-          «Заполнить по фото» появится после подключения распознавания (этап 4).
-        </p>
       </div>
     </section>
 
