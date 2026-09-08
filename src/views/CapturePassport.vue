@@ -74,13 +74,23 @@ async function onFile(e: Event) {
   }
 }
 
+const saving = ref(false)
+
 async function save() {
-  if (!compressedBlob) return
-  scanId = await scansStore.createPending(Number(props.id), compressedBlob)
-  await scansStore.setExtracted(scanId, extracted.value)
-  await scansStore.update(scanId, { remark: remark.value })
-  savedCount.value++
-  reset()
+  if (!compressedBlob || saving.value) return
+  saving.value = true
+  try {
+    scanId = await scansStore.createPending(Number(props.id), compressedBlob)
+    await scansStore.setExtracted(scanId, extracted.value)
+    await scansStore.update(scanId, { remark: remark.value })
+    savedCount.value++
+    reset()
+  } catch (err) {
+    errorMsg.value = 'Ошибка сохранения: ' + (err as Error).message
+    phase.value = 'error'
+  } finally {
+    saving.value = false
+  }
 }
 
 function reset() {
@@ -134,7 +144,7 @@ function reset() {
       <div class="card">
         <ScanReviewCard v-model="extracted" v-model:remark="remark" :show-remark="true" />
       </div>
-      <button @click="save">Сохранить скан</button>
+      <button @click="save" :disabled="saving">{{ saving ? 'Сохраняю…' : 'Сохранить скан' }}</button>
       <button class="ghost" @click="reset">Отмена</button>
     </div>
 
