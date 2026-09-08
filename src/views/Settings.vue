@@ -129,7 +129,6 @@ onMounted(async () => {
         ref="fillInput"
         type="file"
         accept="image/*"
-        capture="environment"
         style="display: none"
         @change="onFillFile"
       />

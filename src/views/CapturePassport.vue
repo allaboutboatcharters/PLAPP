@@ -109,7 +109,6 @@ function reset() {
       ref="fileInput"
       type="file"
       accept="image/*"
-      capture="environment"
       style="display: none"
       @change="onFile"
     />
