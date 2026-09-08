@@ -40,10 +40,13 @@ function writeDataRow(ws: ExcelJS.Worksheet, rowIdx: number, seq: number, r: Lis
   row.getCell(2).value = caps(r.lastName)
   row.getCell(3).value = caps(r.firstName)
   row.getCell(4).value = toExcelDate(r.dateOfBirth)
+  row.getCell(4).numFmt = '@'
   row.getCell(5).value = caps(r.placeOfBirth)
   row.getCell(6).value = caps(r.nationality)
   row.getCell(7).value = toExcelDate(r.issueDate)
+  row.getCell(7).numFmt = '@'
   row.getCell(8).value = toExcelDate(r.expirationDate)
+  row.getCell(8).numFmt = '@'
   row.getCell(9).value = r.passportNumber
   row.getCell(10).value = r.rank
   row.getCell(11).value = r.remark
