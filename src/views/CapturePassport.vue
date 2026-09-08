@@ -80,8 +80,18 @@ async function save() {
   if (!compressedBlob || saving.value) return
   saving.value = true
   try {
+    const plain: ExtractedPassport = {
+      lastName: extracted.value.lastName,
+      firstName: extracted.value.firstName,
+      dateOfBirth: extracted.value.dateOfBirth,
+      placeOfBirth: extracted.value.placeOfBirth,
+      nationality: extracted.value.nationality,
+      issueDate: extracted.value.issueDate,
+      expirationDate: extracted.value.expirationDate,
+      passportNumber: extracted.value.passportNumber
+    }
     scanId = await scansStore.createPending(Number(props.id), compressedBlob)
-    await scansStore.setExtracted(scanId, extracted.value)
+    await scansStore.setExtracted(scanId, plain)
     await scansStore.update(scanId, { remark: remark.value })
     savedCount.value++
     reset()
