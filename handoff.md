@@ -1,49 +1,51 @@
 # Handoff — PLAPP (Crew & Passenger List PWA)
 
 > Снимок состояния на конец сессии. Файл перезаписывается каждый раз, историю не хранит.
-> Обновлено: 08.09.2026 14:10 AST
+> Обновлено: 08.09.2026 15:28 AST
 
 ## Текущее состояние (одним абзацем)
-Приложение построено полностью по всем 8 этапам PLAN.md и запушено в GitHub
-(`allaboutboatcharters/PLAPP`, ветка `main`). Каркас PWA, Settings (лодки/экипаж/
-API-ключ), съёмка и распознавание паспортов через Claude vision, генерация XLSX
-строго по образцу, история с группировкой по дням, 72-часовая чистка сканов.
-`npm run build` проходит (типы чистые). Связка ключ+модель+распознавание
-проверена на реальном API. Живого визуального прогона UI в браузере не было —
-на машине нет Chrome.
+Приложение полностью собрано и работает на телефоне через dev-сервер (HTTPS LAN).
+Установлен Chrome на Mac для удалённого просмотра через browser-harness. Съёмка
+паспортов, распознавание через Claude vision, сохранение сканов и генерация XLSX —
+всё функционирует. XLSX-модуль полностью переписан по реальному образцу
+(Crew_and_Passenger_List_Rumbelly_2.xlsx). `npm run build` проходит чисто.
 
 ## Сделано в этой сессии
-- Переписан PLAN.md (структура), добавлен раздел про запуск без домена.
-- Построен весь проект: Vite+Vue3+TS, Pinia, Dexie, ExcelJS, vite-plugin-pwa.
-- Модуль XLSX сверен дампом openpyxl с образцом — совпадение до ячейки.
-- Проверено распознавание: `claude-sonnet-5` + tool_use работают, данные не
-  выдумываются (тестовые фото оказались не паспортами — определено верно).
-- DEV-подстановка API-ключа из `.env` (в production не попадает).
-- Созданы AGENTS.md (читать handoff.md в начале сессии) и скилл session-handoff.
+- Убран `capture="environment"` — теперь фото можно выбирать из галереи, а не только через камеру.
+- Исправлен DataCloneError при сохранении скана (Vue reactive proxy → plain object перед записью в IndexedDB).
+- Добавлены try/catch + индикатор «Сохраняю…» на кнопку сохранения скана.
+- XLSX-модуль (`passengerListWorkbook.ts`) полностью переписан по образцу:
+  - Заголовок Impact 36 в B1, высота 45.
+  - Заголовки колонок Times New Roman 10 в строке 2.
+  - Данные Calibri 11 со строки 3.
+  - Даты как JS Date с форматом `m/d/yyyy` (не текст и не Excel serial numbers).
+  - 28 пустых слотов пассажиров с номерами и "Passenger".
+  - Точные ширины колонок из образца, без merged cells.
+- Установлен Chrome на Mac — browser-harness теперь работает для просмотра приложения.
 
 ## В работе / не закоммичено
-- `AGENTS.md` и `handoff.md` созданы, но ещё НЕ закоммичены (git status: `?? AGENTS.md`).
-- Всё остальное закоммичено и запушено.
+Всё закоммичено, рабочее дерево чистое.
 
 ## Следующие шаги
-1. Закоммитить AGENTS.md + handoff.md (по решению пользователя).
-2. Визуальный прогон UI на реальном телефоне: съёмка паспорта → распознавание →
-   формирование списка → сравнение XLSX с образцом → Поделиться (iPhone/Android).
-3. Деплой `dist/` на Cloudflare Pages / GitHub Pages для теста на телефоне.
-4. Завести реальные данные: 10 лодок и 6+6 экипажа в Настройках.
+1. Прогон полного цикла на телефоне: фото паспорта → распознавание → сохранить → сгенерировать XLSX → сравнить с образцом визуально.
+2. Деплой `dist/` на Cloudflare Pages или GitHub Pages для постоянной ссылки без dev-сервера.
+3. Завести реальные данные: 10 лодок и 6+6 экипажа в Настройках.
+4. Проверить генерацию XLSX с реальными данными и сравнить дампом openpyxl с образцом.
 
 ## Открытые вопросы / решения к принятию
-- Деплоить на Cloudflare Pages или GitHub Pages?
-- Прислать список названий лодок и ФИО экипажа (можно засидить).
+- Cloudflare Pages или GitHub Pages для деплоя?
+- Список названий лодок и ФИО экипажа для засидки.
+- Образец XLSX может потребовать дополнительных правок после визуального сравнения на телефоне.
 
 ## Полезное для быстрого старта
 - Последние коммиты:
-  - db6e443 DEV-only автоподстановка Claude API-ключа из .env
-  - a5710d1 Экипаж «заполнить по фото», README, HTTPS для dev:lan
-  - a096ee3 Этап 4-5-6: распознавание, XLSX, история
-  - 102e3f8 Этап 1-2-3: каркас PWA + Settings + BoatPicker/BoatHome
-- Команды: `npm install`, `npm run dev` (localhost), `npm run dev:lan` (HTTPS в
-  сети), `npm run build` (vue-tsc + сборка), `npm run preview`.
+  - 3698a53 XLSX: полная переделка по образцу — Impact заголовок, даты как Date, 28 пустых слотов
+  - 5d13917 Fix DataCloneError: снимаем Vue reactive proxy перед записью в IndexedDB
+  - e703578 Кнопка Сохранить: try/catch + индикатор сохранения
+  - ce9f7f7 Фото: выбор из галереи или камеры (убран capture=environment)
+- Команды: `npm install`, `npm run dev`, `npm run dev:lan` (HTTPS), `npm run build`, `npm run preview`.
 - Важные файлы: `PLAN.md`, `README.md`, `AGENTS.md`,
-  `src/lib/passengerListWorkbook.ts` (XLSX), `src/lib/claude.ts` (распознавание).
-- `.env` (в .gitignore): `CLAUDEKEY` и `VITE_CLAUDE_API_KEY` — Anthropic API-ключ.
+  `src/lib/passengerListWorkbook.ts` (XLSX), `src/lib/claude.ts` (распознавание),
+  `src/views/CapturePassport.vue` (съёмка/сохранение сканов).
+- Browser-harness: Chrome установлен, remote debugging настроено — можно смотреть приложение через browser_exec.
+- Образец XLSX: `/Users/boatcharters/.hermes/cache/documents/doc_d768cec7faf0_Crew_and_Passenger_List_Rumbelly_2.xlsx`
