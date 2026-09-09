@@ -39,5 +39,10 @@ export const useListsStore = defineStore('lists', () => {
     return set
   }
 
-  return { lists, loadAll, get, save, remove, usedPassportNumbers }
+  async function update(id: number, patch: Partial<PassengerList>) {
+    await db.passengerLists.update(id, patch)
+    await loadAll()
+  }
+
+  return { lists, loadAll, get, save, update, remove, usedPassportNumbers }
 })

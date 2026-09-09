@@ -47,6 +47,7 @@ async function remove() {
     </div>
 
     <button @click="share">Share / Download</button>
+    <button class="secondary" style="margin-top: 8px" @click="router.push(`/history/${listId}/add`)">+ Add passengers</button>
 
     <div class="card" style="overflow-x: auto; margin-top: 12px">
       <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem">
