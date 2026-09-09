@@ -5,6 +5,7 @@ import { useScansStore } from '../stores/scans'
 import { useListsStore } from '../stores/lists'
 import { buildPassengerListWorkbook } from '../lib/passengerListWorkbook'
 import { shareOrDownload } from '../lib/share'
+import { printList } from '../lib/printList'
 import type { PassengerList, PassportScan, ListRow } from '../db/dexie'
 
 const props = defineProps<{ listId: string }>()
@@ -22,6 +23,8 @@ const adding = ref(false)
 const errorMsg = ref('')
 let generatedBlob: Blob | null = null
 let generatedName = ''
+let lastCrewRows: ListRow[] = []
+let lastPassengers: ListRow[] = []
 
 onMounted(async () => {
   const l = await listsStore.get(Number(props.listId))
@@ -117,6 +120,8 @@ async function addPassengers() {
     }
 
     generatedBlob = blob
+    lastCrewRows = plainCrewRows
+    lastPassengers = allPassengers
     phase.value = 'done'
   } catch (err) {
     errorMsg.value = (err as Error).message
@@ -175,6 +180,7 @@ async function share() {
         <p class="muted">{{ generatedName }}</p>
       </div>
       <button @click="share">Share / Download</button>
+      <button class="secondary" @click="printList(list?.boatName ?? '', lastCrewRows, lastPassengers)">🖨 Print</button>
       <button class="secondary" @click="router.push(`/history/${listId}`)">Back to list</button>
       <button class="ghost" @click="router.push('/history')">To history</button>
     </div>
