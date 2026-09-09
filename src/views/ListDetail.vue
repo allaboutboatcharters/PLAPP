@@ -3,6 +3,7 @@ import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useListsStore } from '../stores/lists'
 import { shareOrDownload } from '../lib/share'
+import { printList } from '../lib/printList'
 import { humanDate, humanTime } from '../lib/formatters'
 import type { PassengerList, ListRow } from '../db/dexie'
 
@@ -47,6 +48,7 @@ async function remove() {
     </div>
 
     <button @click="share">Share / Download</button>
+    <button class="secondary" style="margin-top: 8px" @click="printList(list.boatName, list.crewRows, list.passengers)">🖨 Print</button>
     <button class="secondary" style="margin-top: 8px" @click="router.push(`/history/${listId}/add`)">+ Add passengers</button>
 
     <div class="card" style="overflow-x: auto; margin-top: 12px">
