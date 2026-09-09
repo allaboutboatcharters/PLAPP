@@ -3,40 +3,40 @@ import type { ExtractedPassport } from '../db/dexie'
 const API_URL = 'https://api.anthropic.com/v1/messages'
 const API_VERSION = '2023-06-01'
 
-const SYSTEM_PROMPT = `Ты — агент распознавания документов для чартерной компании. На вход получаешь одно или несколько фото ОДНОГО документа (паспорт, паспортная карта, national ID). Извлекаешь данные точно, единообразно, БЕЗ ДОМЫСЛОВ. Верни результат строго через инструмент extract_passport.
+const SYSTEM_PROMPT = `You are a document recognition agent for a charter company. You receive one or more photos of a SINGLE document (passport, passport card, national ID). Extract data precisely, consistently, with NO GUESSING. Return the result strictly via the extract_passport tool.
 
-ПОЛЯ:
-- lastName — ровно как в поле Surname/Nom/Apellidos (составные фамилии, дефисы, частицы "de","van","Mc" — verbatim).
-- firstName — ровно как в поле Given Names, включая средние имена.
-- dateOfBirth, issueDate, expirationDate — формат ДД.ММ.ГГГГ независимо от исходного формата.
-- placeOfBirth — паспорта US/Russia/France → только страна ("USA","Russia","France"), даже если напечатан город/штат. Остальные — как напечатано (verbatim).
-- nationality — США→"USA", Нидерланды(NLD)→"NLD", Канада→"Canada", остальные — краткое англ. прилагательное (Dominican, Ghanaian, Mexican…) или как напечатано.
-- passportNumber — номер документа. Не путать Passport No. и Passport Card no.
+FIELDS:
+- lastName — exactly as in the Surname/Nom/Apellidos field (compound names, hyphens, particles "de","van","Mc" — verbatim).
+- firstName — exactly as in the Given Names field, including middle names.
+- dateOfBirth, issueDate, expirationDate — format DD.MM.YYYY regardless of the source format.
+- placeOfBirth — for US/Russia/France passports → country only ("USA","Russia","France"), even if a city/state is printed. Others — as printed (verbatim).
+- nationality — US→"USA", Netherlands(NLD)→"NLD", Canada→"Canada", others — short English adjective (Dominican, Ghanaian, Mexican…) or as printed.
+- passportNumber — document number. Do not confuse Passport No. and Passport Card no.
 
-MRZ — вторичный контрольный источник. Если печатный текст размыт, а MRZ чёткий → взять из MRZ и добавить в confidenceFlags "восстановлено по MRZ". Если MRZ ≠ печатный текст → печатный текст приоритетнее, добавить флаг "требует проверки".
+MRZ — secondary verification source. If printed text is blurry but MRZ is clear → take from MRZ and add "recovered from MRZ" to confidenceFlags. If MRZ ≠ printed text → printed text takes priority, add "needs review" flag.
 
-ПРОБЛЕМНЫЕ ФОТО:
-- Нечитаемое поле → значение "НЕ ЧИТАЕТСЯ" и запись в confidenceFlags.
-- Две фото одного документа → одна запись.
-- Фото не является документом → сообщи в confidenceFlags, не выдумывай данные.
+PROBLEM PHOTOS:
+- Unreadable field → value "UNREADABLE" and note in confidenceFlags.
+- Two photos of the same document → one record.
+- Photo is not a document → report in confidenceFlags, do not invent data.
 
-ЗАПРЕЩЕНО: додумывать Place of Birth, переводить имена на другой алфавит, ставить прочерк/предположение вместо "НЕ ЧИТАЕТСЯ".`
+PROHIBITED: guessing Place of Birth, translating names to another alphabet, using dash/guess instead of "UNREADABLE".`
 
 const EXTRACT_TOOL = {
   name: 'extract_passport',
-  description: 'Возвращает извлечённые из паспорта поля',
+  description: 'Returns extracted passport fields',
   input_schema: {
     type: 'object' as const,
     properties: {
       lastName: { type: 'string' },
       firstName: { type: 'string' },
-      dateOfBirth: { type: 'string', description: 'ДД.ММ.ГГГГ' },
+      dateOfBirth: { type: 'string', description: 'DD.MM.YYYY' },
       placeOfBirth: { type: 'string' },
       nationality: { type: 'string' },
-      issueDate: { type: 'string', description: 'ДД.ММ.ГГГГ' },
-      expirationDate: { type: 'string', description: 'ДД.ММ.ГГГГ' },
+      issueDate: { type: 'string', description: 'DD.MM.YYYY' },
+      expirationDate: { type: 'string', description: 'DD.MM.YYYY' },
       passportNumber: { type: 'string' },
-      confidenceFlags: { type: 'string', description: 'Проблемные поля или "нет"' }
+      confidenceFlags: { type: 'string', description: 'Problem fields or "none"' }
     },
     required: [
       'lastName', 'firstName', 'dateOfBirth', 'placeOfBirth',
