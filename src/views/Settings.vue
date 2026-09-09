@@ -25,14 +25,14 @@ async function addBoat() {
 
 // --- crew ---
 const crewFields: { key: keyof Crew; label: string }[] = [
-  { key: 'lastName', label: 'Фамилия' },
-  { key: 'firstName', label: 'Имя' },
-  { key: 'dateOfBirth', label: 'Дата рождения (ДД.ММ.ГГГГ)' },
-  { key: 'placeOfBirth', label: 'Место рождения' },
-  { key: 'nationality', label: 'Гражданство' },
-  { key: 'issueDate', label: 'Дата выдачи (ДД.ММ.ГГГГ)' },
-  { key: 'expirationDate', label: 'Действителен до (ДД.ММ.ГГГГ)' },
-  { key: 'passportNumber', label: 'Номер паспорта' }
+  { key: 'lastName', label: 'Last Name' },
+  { key: 'firstName', label: 'First Name' },
+  { key: 'dateOfBirth', label: 'Date of Birth (DD.MM.YYYY)' },
+  { key: 'placeOfBirth', label: 'Place of Birth' },
+  { key: 'nationality', label: 'Nationality' },
+  { key: 'issueDate', label: 'Issue Date (DD.MM.YYYY)' },
+  { key: 'expirationDate', label: 'Expiration Date (DD.MM.YYYY)' },
+  { key: 'passportNumber', label: 'Passport Number' }
 ]
 
 async function addCrew(role: CrewRole) {
@@ -97,23 +97,23 @@ onMounted(async () => {
 <template>
   <div>
     <div class="topbar">
-      <button class="back" @click="router.push('/')">‹ Назад</button>
-      <h1>Настройки</h1>
+      <button class="back" @click="router.push('/')">‹ Back</button>
+      <h1>Settings</h1>
       <span style="width: 60px"></span>
     </div>
 
     <div class="row" style="margin-bottom: 12px">
-      <button :class="tab === 'boats' ? '' : 'ghost'" @click="tab = 'boats'">Лодки</button>
-      <button :class="tab === 'crew' ? '' : 'ghost'" @click="tab = 'crew'">Экипаж</button>
-      <button :class="tab === 'api' ? '' : 'ghost'" @click="tab = 'api'">API-ключ</button>
+      <button :class="tab === 'boats' ? '' : 'ghost'" @click="tab = 'boats'">Boats</button>
+      <button :class="tab === 'crew' ? '' : 'ghost'" @click="tab = 'crew'">Crew</button>
+      <button :class="tab === 'api' ? '' : 'ghost'" @click="tab = 'api'">API Key</button>
     </div>
 
     <!-- BOATS -->
     <section v-if="tab === 'boats'">
       <div class="card">
-        <label>Новая лодка</label>
+        <label>New boat</label>
         <div class="row">
-          <input v-model="newBoatName" placeholder="Название лодки" @keyup.enter="addBoat" />
+          <input v-model="newBoatName" placeholder="Boat name" @keyup.enter="addBoat" />
           <button style="width: auto" @click="addBoat">+</button>
         </div>
       </div>
@@ -133,8 +133,8 @@ onMounted(async () => {
         @change="onFillFile"
       />
       <div class="row">
-        <button class="secondary" @click="addCrew('captain')">+ Капитан</button>
-        <button class="secondary" @click="addCrew('assistant')">+ Помощник</button>
+        <button class="secondary" @click="addCrew('captain')">+ Captain</button>
+        <button class="secondary" @click="addCrew('assistant')">+ Assistant</button>
       </div>
       <div v-if="fillError" class="card" style="border-color: var(--danger)">{{ fillError }}</div>
       <div v-for="c in crewStore.crew" :key="c.id" class="card stack">
@@ -143,14 +143,14 @@ onMounted(async () => {
           <button class="danger" style="width: auto" @click="crewStore.remove(c.id!)">✕</button>
         </div>
         <button class="ghost" :disabled="fillingId === c.id" @click="fillByPhoto(c)">
-          {{ fillingId === c.id ? 'Распознаю…' : '📷 Заполнить по фото паспорта' }}
+          {{ fillingId === c.id ? 'Recognizing…' : '📷 Fill from passport photo' }}
         </button>
         <div v-for="f in crewFields" :key="String(f.key)">
           <label>{{ f.label }}</label>
           <input v-model="(c as any)[f.key]" @change="saveCrew(c)" />
         </div>
         <div>
-          <label>Remarks (по умолчанию SXM)</label>
+          <label>Remarks (default SXM)</label>
           <input v-model="c.remark" @change="saveCrew(c)" />
         </div>
       </div>
@@ -164,13 +164,12 @@ onMounted(async () => {
           <input v-model="apiKey" type="password" placeholder="sk-ant-..." autocomplete="off" />
         </div>
         <div>
-          <label>Модель</label>
+          <label>Model</label>
           <input v-model="model" />
         </div>
-        <button @click="saveApi">Сохранить</button>
+        <button @click="saveApi">Save</button>
         <p class="muted" style="font-size: 0.8rem">
-          Ключ хранится только на этом устройстве (IndexedDB) и используется для
-          прямых запросов к api.anthropic.com.
+          Key is stored only on this device (IndexedDB) and used for direct requests to api.anthropic.com.
         </p>
       </div>
     </section>

@@ -15,7 +15,7 @@ const readyCount = ref(0)
 onMounted(async () => {
   const boatId = Number(props.id)
   const boat = await boatsStore.get(boatId)
-  boatName.value = boat?.name ?? 'Лодка'
+  boatName.value = boat?.name ?? 'Boat'
   readyCount.value = await scansStore.readyCount(boatId)
 })
 </script>
@@ -23,22 +23,22 @@ onMounted(async () => {
 <template>
   <div>
     <div class="topbar">
-      <button class="back" @click="router.push('/')">‹ Лодки</button>
+      <button class="back" @click="router.push('/')">‹ Boats</button>
       <h1>{{ boatName }}</h1>
       <span style="width: 60px"></span>
     </div>
 
     <div class="stack">
-      <button @click="router.push(`/boat/${id}/capture`)">📷 Добавить паспорт</button>
+      <button @click="router.push(`/boat/${id}/capture`)">📷 Add passport</button>
       <button @click="router.push(`/boat/${id}/new-list`)">
-        📋 Сделать Passenger list
+        📋 Create Passenger List
         <span v-if="readyCount" class="badge">{{ readyCount }}</span>
       </button>
-      <button class="secondary" @click="router.push('/history')">🕘 История</button>
+      <button class="secondary" @click="router.push('/history')">🕘 History</button>
     </div>
 
     <p class="muted center" style="margin-top: 16px">
-      Готовых сканов для этой лодки: {{ readyCount }}
+      Ready scans for this boat: {{ readyCount }}
     </p>
   </div>
 </template>

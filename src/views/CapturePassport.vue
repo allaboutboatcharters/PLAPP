@@ -39,7 +39,7 @@ function blankExtracted(): ExtractedPassport {
 
 onMounted(async () => {
   const boat = await boatsStore.get(Number(props.id))
-  boatName.value = boat?.name ?? 'Лодка'
+  boatName.value = boat?.name ?? 'Boat'
 })
 
 function pick() {
@@ -64,7 +64,7 @@ async function onFile(e: Event) {
       nationality: result.nationality, issueDate: result.issueDate,
       expirationDate: result.expirationDate, passportNumber: result.passportNumber
     }
-    flags.value = result.confidenceFlags && result.confidenceFlags !== 'нет' ? result.confidenceFlags : ''
+    flags.value = result.confidenceFlags && result.confidenceFlags !== 'none' ? result.confidenceFlags : ''
     phase.value = 'review'
   } catch (err) {
     errorMsg.value = (err as Error).message
@@ -96,7 +96,7 @@ async function save() {
     savedCount.value++
     reset()
   } catch (err) {
-    errorMsg.value = 'Ошибка сохранения: ' + (err as Error).message
+    errorMsg.value = 'Save error: ' + (err as Error).message
     phase.value = 'error'
   } finally {
     saving.value = false
@@ -119,11 +119,11 @@ function reset() {
   <div>
     <div class="topbar">
       <button class="back" @click="router.push(`/boat/${id}`)">‹ {{ boatName }}</button>
-      <h1>Паспорт</h1>
+      <h1>Passport</h1>
       <span style="width: 60px"></span>
     </div>
 
-    <p v-if="savedCount" class="badge">Сохранено сканов: {{ savedCount }}</p>
+    <p v-if="savedCount" class="badge">Scans saved: {{ savedCount }}</p>
 
     <input
       ref="fileInput"
@@ -135,13 +135,13 @@ function reset() {
 
     <!-- IDLE -->
     <div v-if="phase === 'idle'" class="stack">
-      <button @click="pick">📷 Сфотографировать паспорт</button>
-      <button v-if="savedCount" class="secondary" @click="router.push(`/boat/${id}`)">Готово</button>
+      <button @click="pick">📷 Take passport photo</button>
+      <button v-if="savedCount" class="secondary" @click="router.push(`/boat/${id}`)">Done</button>
     </div>
 
     <!-- RECOGNIZING -->
     <div v-else-if="phase === 'recognizing'" class="card center">
-      <p>Распознаю паспорт…</p>
+      <p>Recognizing passport…</p>
       <img v-if="previewUrl" :src="previewUrl" style="max-width: 100%; border-radius: 10px" />
     </div>
 
@@ -149,23 +149,23 @@ function reset() {
     <div v-else-if="phase === 'review'" class="stack">
       <img v-if="previewUrl" :src="previewUrl" style="max-width: 100%; border-radius: 10px" />
       <div v-if="flags" class="card" style="border-color: var(--danger)">
-        ⚠️ Требует проверки: {{ flags }}
+        ⚠️ Needs review: {{ flags }}
       </div>
       <div class="card">
         <ScanReviewCard v-model="extracted" v-model:remark="remark" :show-remark="true" />
       </div>
-      <button @click="save" :disabled="saving">{{ saving ? 'Сохраняю…' : 'Сохранить скан' }}</button>
-      <button class="ghost" @click="reset">Отмена</button>
+      <button @click="save" :disabled="saving">{{ saving ? 'Saving…' : 'Save scan' }}</button>
+      <button class="ghost" @click="reset">Cancel</button>
     </div>
 
     <!-- ERROR -->
     <div v-else-if="phase === 'error'" class="stack">
       <div class="card" style="border-color: var(--danger)">
-        <b>Ошибка распознавания</b>
+        <b>Recognition error</b>
         <p class="muted">{{ errorMsg }}</p>
       </div>
-      <button class="secondary" @click="pick">Попробовать снова</button>
-      <button class="ghost" @click="reset">Отмена</button>
+      <button class="secondary" @click="pick">Try again</button>
+      <button class="ghost" @click="reset">Cancel</button>
     </div>
   </div>
 </template>

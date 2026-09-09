@@ -12,12 +12,12 @@ onMounted(() => boatsStore.load())
 <template>
   <div>
     <div class="topbar">
-      <h1>Лодки</h1>
-      <button class="back" @click="router.push('/settings')">⚙︎ Настройки</button>
+      <h1>Boats</h1>
+      <button class="back" @click="router.push('/settings')">⚙︎ Settings</button>
     </div>
 
     <div v-if="boatsStore.boats.length === 0" class="card center muted">
-      Лодок пока нет.<br />Добавьте их в разделе «Настройки».
+      No boats yet.<br />Add them in Settings.
     </div>
 
     <div class="grid">
@@ -32,7 +32,7 @@ onMounted(() => boatsStore.load())
     </div>
 
     <div style="margin-top: 20px">
-      <button class="secondary" @click="router.push('/history')">История списков</button>
+      <button class="secondary" @click="router.push('/history')">List History</button>
     </div>
   </div>
 </template>

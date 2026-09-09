@@ -40,7 +40,7 @@ const canGenerate = computed(() => captainId.value != null && assistantId.value 
 
 onMounted(async () => {
   const boat = await boatsStore.get(boatId)
-  boatName.value = boat?.name ?? 'Лодка'
+  boatName.value = boat?.name ?? 'Boat'
   await crewStore.load()
   captains.value = crewStore.byRole('captain')
   assistants.value = crewStore.byRole('assistant')
@@ -146,25 +146,25 @@ async function share() {
     <div v-if="phase === 'select'" class="stack">
       <div class="card stack">
         <div>
-          <label>Капитан (CAPTAIN)</label>
+          <label>Captain (CAPTAIN)</label>
           <select v-model="captainId">
             <option v-for="c in captains" :key="c.id" :value="c.id">{{ c.lastName }} {{ c.firstName }}</option>
           </select>
         </div>
         <div>
-          <label>Помощник (CREW)</label>
+          <label>Assistant (CREW)</label>
           <select v-model="assistantId">
             <option v-for="c in assistants" :key="c.id" :value="c.id">{{ c.lastName }} {{ c.firstName }}</option>
           </select>
         </div>
         <p v-if="captains.length === 0 || assistants.length === 0" class="muted">
-          Сначала заведите капитанов и помощников в Настройках.
+          First add captains and assistants in Settings.
         </p>
       </div>
 
-      <h3>Пассажиры ({{ selected.size }} из {{ candidates.length }})</h3>
+      <h3>Passengers ({{ selected.size }} of {{ candidates.length }})</h3>
       <div v-if="candidates.length === 0" class="card muted center">
-        Нет готовых сканов для этой лодки. Добавьте паспорта.
+        No ready scans for this boat. Add passports.
       </div>
       <label v-for="s in candidates" :key="s.id" class="card row" style="cursor: pointer">
         <input
@@ -176,25 +176,25 @@ async function share() {
         <div>
           <b>{{ s.extracted.lastName }} {{ s.extracted.firstName }}</b>
           <div class="muted" style="font-size: 0.85rem">
-            {{ s.extracted.passportNumber }} · {{ s.remark || '— жильё не указано —' }}
+            {{ s.extracted.passportNumber }} · {{ s.remark || '— no accommodation specified —' }}
           </div>
         </div>
       </label>
 
       <div v-if="errorMsg" class="card" style="border-color: var(--danger)">{{ errorMsg }}</div>
       <button :disabled="!canGenerate || generating" @click="generate">
-        {{ generating ? 'Формирую…' : 'Сформировать' }}
+        {{ generating ? 'Generating…' : 'Generate' }}
       </button>
     </div>
 
     <div v-else class="stack">
       <div class="card center">
-        <p>✅ Список сформирован</p>
+        <p>✅ List generated</p>
         <p class="muted">{{ generatedName }}</p>
       </div>
-      <button @click="share">Поделиться / Скачать</button>
-      <button class="secondary" @click="router.push('/history')">В историю</button>
-      <button class="ghost" @click="router.push(`/boat/${id}`)">Готово</button>
+      <button @click="share">Share / Download</button>
+      <button class="secondary" @click="router.push('/history')">To history</button>
+      <button class="ghost" @click="router.push(`/boat/${id}`)">Done</button>
     </div>
   </div>
 </template>

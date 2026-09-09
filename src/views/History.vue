@@ -43,19 +43,19 @@ async function share(l: PassengerList) {
 <template>
   <div>
     <div class="topbar">
-      <button class="back" @click="router.push('/')">‹ Лодки</button>
-      <h1>История</h1>
+      <button class="back" @click="router.push('/')">‹ Boats</button>
+      <h1>History</h1>
       <span style="width: 60px"></span>
     </div>
 
-    <label>Фильтр по лодке</label>
+    <label>Filter by boat</label>
     <select v-model="filterBoat">
-      <option value="all">Все лодки</option>
+      <option value="all">All boats</option>
       <option v-for="b in boatsStore.boats" :key="b.id" :value="b.id">{{ b.name }}</option>
     </select>
 
     <div v-if="filtered.length === 0" class="card center muted" style="margin-top: 16px">
-      Списков пока нет.
+      No lists yet.
     </div>
 
     <div v-for="[date, lists] in grouped" :key="date" style="margin-top: 16px">
@@ -66,11 +66,11 @@ async function share(l: PassengerList) {
           <span class="muted">{{ humanTime(l.createdAt) }}</span>
         </div>
         <div class="muted" style="font-size: 0.9rem; margin: 6px 0">
-          Экипаж: {{ l.crewCount }} · Пассажиров: {{ l.passengerCount }}
+          Crew: {{ l.crewCount }} · Passengers: {{ l.passengerCount }}
         </div>
         <div class="row">
-          <button style="width: auto" @click="share(l)">Поделиться</button>
-          <button class="ghost" style="width: auto" @click="router.push(`/history/${l.id}`)">Открыть</button>
+          <button style="width: auto" @click="share(l)">Share</button>
+          <button class="ghost" style="width: auto" @click="router.push(`/history/${l.id}`)">Open</button>
         </div>
       </div>
     </div>

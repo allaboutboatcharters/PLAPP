@@ -20,13 +20,13 @@ export async function compressImage(file: Blob, maxSize = 1600, quality = 0.85):
   canvas.width = width
   canvas.height = height
   const ctx = canvas.getContext('2d')
-  if (!ctx) throw new Error('Canvas 2D context недоступен')
+  if (!ctx) throw new Error('Canvas 2D context unavailable')
   ctx.drawImage(bitmap, 0, 0, width, height)
   bitmap.close?.()
 
   const blob = await new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
-      (b) => (b ? resolve(b) : reject(new Error('Не удалось сжать изображение'))),
+      (b) => (b ? resolve(b) : reject(new Error('Failed to compress image'))),
       'image/jpeg',
       quality
     )

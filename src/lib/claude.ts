@@ -59,14 +59,14 @@ export async function recognizePassport(
   images: string[],
   config: ClaudeConfig
 ): Promise<RecognitionResult> {
-  if (!config.apiKey) throw new Error('Не задан API-ключ (Настройки → API-ключ)')
+  if (!config.apiKey) throw new Error('API key not set (Settings → API Key)')
 
   const content = [
     ...images.map((base64) => ({
       type: 'image' as const,
       source: { type: 'base64' as const, media_type: 'image/jpeg' as const, data: base64 }
     })),
-    { type: 'text' as const, text: 'Извлеки данные документа через инструмент extract_passport.' }
+    { type: 'text' as const, text: 'Extract document data using the extract_passport tool.' }
   ]
 
   const res = await fetch(API_URL, {
@@ -100,7 +100,7 @@ export async function recognizePassport(
 
   const data = await res.json()
   const toolUse = (data.content ?? []).find((b: any) => b.type === 'tool_use')
-  if (!toolUse) throw new Error('Claude не вернул структурный ответ (tool_use)')
+  if (!toolUse) throw new Error('Claude did not return a structured response (tool_use)')
 
   const i = toolUse.input ?? {}
   return {
@@ -112,6 +112,6 @@ export async function recognizePassport(
     issueDate: String(i.issueDate ?? ''),
     expirationDate: String(i.expirationDate ?? ''),
     passportNumber: String(i.passportNumber ?? ''),
-    confidenceFlags: String(i.confidenceFlags ?? 'нет')
+    confidenceFlags: String(i.confidenceFlags ?? 'none')
   }
 }

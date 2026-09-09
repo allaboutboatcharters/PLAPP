@@ -26,7 +26,7 @@ async function share() {
 
 async function remove() {
   if (!list.value) return
-  if (!confirm('Удалить этот список безвозвратно?')) return
+  if (!confirm('Delete this list permanently?')) return
   await listsStore.remove(list.value.id!)
   router.push('/history')
 }
@@ -35,24 +35,24 @@ async function remove() {
 <template>
   <div v-if="list">
     <div class="topbar">
-      <button class="back" @click="router.push('/history')">‹ История</button>
-      <h1>Список</h1>
+      <button class="back" @click="router.push('/history')">‹ History</button>
+      <h1>List</h1>
       <span style="width: 60px"></span>
     </div>
 
     <div class="card">
       <b>{{ list.boatName }}</b>
       <div class="muted">{{ humanDate(list.date) }} · {{ humanTime(list.createdAt) }}</div>
-      <div class="muted">Экипаж: {{ list.crewCount }} · Пассажиров: {{ list.passengerCount }}</div>
+      <div class="muted">Crew: {{ list.crewCount }} · Passengers: {{ list.passengerCount }}</div>
     </div>
 
-    <button @click="share">Поделиться / Скачать</button>
+    <button @click="share">Share / Download</button>
 
     <div class="card" style="overflow-x: auto; margin-top: 12px">
       <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem">
         <thead>
           <tr style="text-align: left">
-            <th>#</th><th>Фамилия</th><th>Имя</th><th>Rank</th><th>Remarks</th>
+            <th>#</th><th>Last Name</th><th>First Name</th><th>Rank</th><th>Remarks</th>
           </tr>
         </thead>
         <tbody>
@@ -67,6 +67,6 @@ async function remove() {
       </table>
     </div>
 
-    <button class="danger" style="margin-top: 12px" @click="remove">Удалить список</button>
+    <button class="danger" style="margin-top: 12px" @click="remove">Delete list</button>
   </div>
 </template>

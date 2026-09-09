@@ -6,14 +6,14 @@ const remark = defineModel<string>('remark')
 defineProps<{ showRemark?: boolean }>()
 
 const fields: { key: keyof ExtractedPassport; label: string }[] = [
-  { key: 'lastName', label: 'Фамилия (Last Name)' },
-  { key: 'firstName', label: 'Имя (First Name)' },
-  { key: 'dateOfBirth', label: 'Дата рождения (ДД.ММ.ГГГГ)' },
-  { key: 'placeOfBirth', label: 'Место рождения' },
-  { key: 'nationality', label: 'Гражданство' },
-  { key: 'issueDate', label: 'Дата выдачи (ДД.ММ.ГГГГ)' },
-  { key: 'expirationDate', label: 'Действителен до (ДД.ММ.ГГГГ)' },
-  { key: 'passportNumber', label: 'Номер паспорта' }
+  { key: 'lastName', label: 'Last Name' },
+  { key: 'firstName', label: 'First Name' },
+  { key: 'dateOfBirth', label: 'Date of Birth (DD.MM.YYYY)' },
+  { key: 'placeOfBirth', label: 'Place of Birth' },
+  { key: 'nationality', label: 'Nationality' },
+  { key: 'issueDate', label: 'Issue Date (DD.MM.YYYY)' },
+  { key: 'expirationDate', label: 'Expiration Date (DD.MM.YYYY)' },
+  { key: 'passportNumber', label: 'Passport Number' }
 ]
 </script>
 
@@ -24,8 +24,8 @@ const fields: { key: keyof ExtractedPassport; label: string }[] = [
       <input v-model="model[f.key]" />
     </div>
     <div v-if="showRemark">
-      <label>Remarks (жильё пассажира)</label>
-      <input v-model="remark" placeholder="напр. Sonesta, Divi Resort" />
+      <label>Remarks (passenger accommodation)</label>
+      <input v-model="remark" placeholder="e.g. Sonesta, Divi Resort" />
     </div>
   </div>
 </template>
