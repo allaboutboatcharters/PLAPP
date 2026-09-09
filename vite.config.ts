@@ -6,7 +6,7 @@ import basicSsl from '@vitejs/plugin-basic-ssl'
 const useSsl = process.env.VITE_SSL === '1' || process.argv.includes('--host')
 
 export default defineConfig({
-  base: './',
+  base: process.env.GITHUB_ACTIONS ? '/PLAPP/' : './',
   plugins: [
     vue(),
     ...(useSsl ? [basicSsl()] : []),
