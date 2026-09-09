@@ -7,11 +7,15 @@ function fmtDate(s: string): string {
   return `${String(p.d).padStart(2, '0')}/${String(p.m).padStart(2, '0')}/${p.y}`
 }
 
+function esc(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
 /**
- * Opens a print-ready window with the Crew & Passenger List table
- * styled to match the XLSX reference layout.
+ * Print the Crew & Passenger List via a hidden iframe.
+ * Works on iOS Safari without losing the current page.
  */
-export function printList(boatName: string, crewRows: ListRow[], passengers: ListRow[]) {
+export function printList(_boatName: string, crewRows: ListRow[], passengers: ListRow[]) {
   const MIN_ROWS = 10
   const passengerSlots = Math.max(passengers.length, MIN_ROWS)
 
@@ -45,7 +49,7 @@ export function printList(boatName: string, crewRows: ListRow[], passengers: Lis
   ).join('\n')
 
   const html = `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>Crew and Passenger List – ${esc(boatName)}</title>
+<html><head><meta charset="utf-8"><title>Crew and Passenger List</title>
 <style>
   @page { size: landscape; margin: 10mm; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -61,10 +65,7 @@ export function printList(boatName: string, crewRows: ListRow[], passengers: Lis
   td:first-child { border-left: 2px solid #000; }
   td:last-child { border-right: 2px solid #000; }
   .footer { font-size: 10pt; margin-top: 6px; }
-  @media print { button { display: none !important; } }
-  .no-print { margin: 12px 0; }
 </style></head><body>
-<button class="no-print" onclick="window.print()">🖨 Print</button>
 <h1>CREW AND PASSENGER LIST</h1>
 <table>
   <thead><tr>
@@ -84,14 +85,26 @@ export function printList(boatName: string, crewRows: ListRow[], passengers: Lis
 </div>
 </body></html>`
 
-  const win = window.open('', '_blank')
-  if (!win) { alert('Please allow popups to print.'); return }
-  win.document.write(html)
-  win.document.close()
-  // Auto-trigger print after content loads
-  win.onload = () => win.print()
-}
+  // Remove any previous print iframe
+  const old = document.getElementById('plapp-print-frame')
+  if (old) old.remove()
 
-function esc(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  const iframe = document.createElement('iframe')
+  iframe.id = 'plapp-print-frame'
+  iframe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;border:none;visibility:hidden;'
+  document.body.appendChild(iframe)
+
+  const doc = iframe.contentDocument || iframe.contentWindow?.document
+  if (!doc) { alert('Cannot open print view'); return }
+
+  doc.open()
+  doc.write(html)
+  doc.close()
+
+  // Wait for content to render, then print
+  setTimeout(() => {
+    iframe.contentWindow?.print()
+    // Clean up after print dialog closes
+    setTimeout(() => iframe.remove(), 1000)
+  }, 300)
 }
