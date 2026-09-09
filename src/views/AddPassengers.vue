@@ -67,8 +67,22 @@ async function addPassengers() {
     const l = list.value
     const chosen = candidates.value.filter(s => selected.value.has(s.id!))
 
+    // Deep-clone existing passengers to strip Vue reactivity
+    const existingPassengers: ListRow[] = l.passengers.map(p => ({
+      seq: p.seq, rank: p.rank, remark: p.remark,
+      lastName: p.lastName, firstName: p.firstName, dateOfBirth: p.dateOfBirth,
+      placeOfBirth: p.placeOfBirth, nationality: p.nationality,
+      issueDate: p.issueDate, expirationDate: p.expirationDate, passportNumber: p.passportNumber
+    }))
+    const plainCrewRows: ListRow[] = l.crewRows.map(c => ({
+      seq: c.seq, rank: c.rank, remark: c.remark,
+      lastName: c.lastName, firstName: c.firstName, dateOfBirth: c.dateOfBirth,
+      placeOfBirth: c.placeOfBirth, nationality: c.nationality,
+      issueDate: c.issueDate, expirationDate: c.expirationDate, passportNumber: c.passportNumber
+    }))
+
     // Dedupe by passport number (also against existing passengers)
-    const existingNumbers = new Set(l.passengers.map(p => p.passportNumber.trim()))
+    const existingNumbers = new Set(existingPassengers.map(p => p.passportNumber.trim()))
     const newPassengers: ListRow[] = []
     for (const s of chosen) {
       const num = s.extracted.passportNumber.trim()
@@ -84,11 +98,11 @@ async function addPassengers() {
     }
 
     // Merge with existing passengers, re-number
-    const allPassengers = [...l.passengers, ...newPassengers]
+    const allPassengers = [...existingPassengers, ...newPassengers]
     allPassengers.forEach((r, i) => (r.seq = i + 1))
 
     // Rebuild XLSX
-    const blob = await buildPassengerListWorkbook(l.crewRows, allPassengers)
+    const blob = await buildPassengerListWorkbook(plainCrewRows, allPassengers)
 
     // Update the list in DB
     await listsStore.update(l.id!, {
