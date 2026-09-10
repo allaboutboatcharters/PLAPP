@@ -69,10 +69,10 @@ export function printList(_boatName: string, crewRows: ListRow[], passengers: Li
   `
   document.head.appendChild(style)
 
-  // Create overlay div (hidden on screen, visible only in print)
+  // Create overlay div — visible full-screen so iOS Safari print preview sees it
   const overlay = document.createElement('div')
   overlay.id = 'plapp-print-overlay'
-  overlay.style.cssText = 'display:none;'
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;background:white;overflow:auto;'
   overlay.innerHTML = `
     <div style="font-family:Calibri,Arial,sans-serif;">
       <h1 style="font-family:Impact,'Arial Black',sans-serif;font-size:28pt;font-weight:normal;margin:0 0 4px 0;">
