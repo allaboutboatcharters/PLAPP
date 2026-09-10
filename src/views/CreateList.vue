@@ -8,7 +8,7 @@ import { useSettingsStore } from '../stores/settings'
 import { useListsStore } from '../stores/lists'
 import { buildPassengerListWorkbook } from '../lib/passengerListWorkbook'
 import { shareOrDownload } from '../lib/share'
-import { printList } from '../lib/printList'
+import { savePdf } from '../lib/savePdf'
 import { todayISO } from '../lib/formatters'
 import type { Crew, ListRow, PassportScan } from '../db/dexie'
 
@@ -198,7 +198,7 @@ async function share() {
         <p class="muted">{{ generatedName }}</p>
       </div>
       <button @click="share">Share / Download</button>
-      <button class="secondary" @click="printList(boatName, lastCrewRows, lastPassengers)">🖨 Print</button>
+      <button class="secondary" @click="savePdf(boatName, lastCrewRows, lastPassengers)">📄 Save PDF</button>
       <button class="secondary" @click="router.push('/history')">To history</button>
       <button class="ghost" @click="router.push(`/boat/${id}`)">Done</button>
     </div>

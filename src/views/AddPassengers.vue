@@ -5,7 +5,7 @@ import { useScansStore } from '../stores/scans'
 import { useListsStore } from '../stores/lists'
 import { buildPassengerListWorkbook } from '../lib/passengerListWorkbook'
 import { shareOrDownload } from '../lib/share'
-import { printList } from '../lib/printList'
+import { savePdf } from '../lib/savePdf'
 import type { PassengerList, PassportScan, ListRow } from '../db/dexie'
 
 const props = defineProps<{ listId: string }>()
@@ -180,7 +180,7 @@ async function share() {
         <p class="muted">{{ generatedName }}</p>
       </div>
       <button @click="share">Share / Download</button>
-      <button class="secondary" @click="printList(list?.boatName ?? '', lastCrewRows, lastPassengers)">🖨 Print</button>
+      <button class="secondary" @click="savePdf(list?.boatName ?? '', lastCrewRows, lastPassengers)">📄 Save PDF</button>
       <button class="secondary" @click="router.push(`/history/${listId}`)">Back to list</button>
       <button class="ghost" @click="router.push('/history')">To history</button>
     </div>
