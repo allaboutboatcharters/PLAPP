@@ -1,38 +1,36 @@
 # Handoff — PLAPP (Crew & Passenger List PWA)
 
 > Снимок состояния на конец сессии. Файл перезаписывается каждый раз, историю не хранит.
-> Обновлено: 09.09.2026 13:57 AST
+> Обновлено: 10.09.2026 10:40 AST
 
 ## Текущее состояние (одним абзацем)
 Приложение задеплоено на GitHub Pages (https://allaboutboatcharters.github.io/PLAPP/),
 репо публичное. Весь UI на английском. XLSX генерируется по образцу с границами,
 датами как Date (m/d/yyyy), min 10 строк пассажиров. Добавление пассажиров в
-существующий список работает. Печать реализована через print overlay в текущей
-странице (fix для iOS Safari). Chrome установлен на Mac для browser-harness.
+существующий список работает. Печать переделана: overlay показывается поверх страницы
+(position:fixed, z-index:99999) вместо display:none, window.print() вызывается
+синхронно из обработчика клика (fix блокировки iOS Safari), cleanup через afterprint.
 `npm run build` проходит чисто. Автодеплой через GitHub Actions при push в main.
+Context7 MCP установлен в Hermes.
 
 ## Сделано в этой сессии
-- Фото из галереи (убран capture="environment").
-- Fix DataCloneError при сохранении скана (Vue reactive proxy → plain object).
-- XLSX полностью переписан по образцу: Impact заголовок, даты как Date, границы
-  (medium внешние / thin внутренние), min 10 строк, точные ширины колонок.
-- GitHub Pages деплой: репо сделано публичным, workflow deploy.yml, динамический base.
-- Весь UI + Claude промпт + tool schema переведены на английский.
-- Добавление пассажиров в существующий список (AddPassengers.vue + route + store update).
-- Печать: кнопка 🖨 Print на 3 экранах (после генерации, после добавления, в истории).
-- Print переделан с window.open → iframe → overlay в текущей странице (iOS Safari fix).
-- Установлен Chrome для browser-harness.
+- Fix блокировки печати iOS Safari: убран requestAnimationFrame + setTimeout,
+  window.print() теперь вызывается синхронно из клика пользователя.
+- Fix превью печати: cleanup overlay через событие afterprint вместо setTimeout(500ms).
+- Fix отображения в превью: overlay теперь position:fixed поверх страницы вместо
+  display:none (iOS Safari не видит скрытые элементы в print preview).
+- Установлен Context7 MCP сервер в Hermes (2 инструмента: resolve-library-id, query-docs).
 
 ## В работе / не закоммичено
 Всё закоммичено, рабочее дерево чистое.
 
 ## Следующие шаги
-1. **Проверить печать на iPhone** — overlay-подход должен работать, но надо протестить.
-2. Пользователь заметил служебную инфу (дата, страница, URL) внизу при печати — это
-   стандартные headers/footers Safari, убираются только вручную в настройках печати.
-   Можно добавить подсказку в UI.
-3. Завести реальные данные: 10 лодок и 6+6 экипажа в Настройках.
-4. Прогон полного цикла на телефоне с реальными паспортами.
+1. **Проверить печать на iPhone** — overlay теперь показывается поверх страницы и
+   print вызывается синхронно; нужно протестировать, что в превью видна таблица
+   Crew & Passenger List, а не UI приложения.
+2. Завести реальные данные: 10 лодок и 6+6 экипажа в Настройках.
+3. Прогон полного цикла на телефоне с реальными паспортами.
+4. Подсказка в UI про браузерные headers/footers при печати (Safari).
 
 ## Открытые вопросы / решения к принятию
 - Служебная инфа при печати (URL, дата, стр.) — это браузерные headers/footers.
@@ -41,13 +39,11 @@
 
 ## Полезное для быстрого старта
 - Последние коммиты:
-  - 6384ecc Print: overlay в текущей странице (fix iOS Safari)
-  - fafe4d6 Кнопка Print на 3 экранах
-  - d878045 Claude промпт и tool schema на английском
-  - b71e7de Добавление пассажиров в существующий список
-  - 4e5f047 Перевод UI на английский
-  - 087c057 GitHub Pages деплой
-  - 2d43a0f XLSX границы + min 10 строк
+  - 25cad71 Print: overlay поверх страницы вместо display:none (fix iOS Safari preview)
+  - 924ac37 Print: afterprint cleanup вместо setTimeout (fix preview iOS)
+  - 04726d3 Print: синхронный window.print() — fix блокировки iOS Safari
+  - 6384ecc Print: overlay в текущей странице вместо iframe/window.open (fix iOS Safari)
+  - fafe4d6 Кнопка Print сразу после генерации и после добавления пассажиров
 - URL: https://allaboutboatcharters.github.io/PLAPP/
 - Команды: `npm install`, `npm run dev`, `npm run dev:lan`, `npm run build`.
 - Важные файлы: `src/lib/passengerListWorkbook.ts` (XLSX), `src/lib/claude.ts`,

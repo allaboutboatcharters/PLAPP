@@ -53,26 +53,29 @@ export function printList(_boatName: string, crewRows: ListRow[], passengers: Li
   document.getElementById('plapp-print-overlay')?.remove()
   document.getElementById('plapp-print-style')?.remove()
 
-  // Inject print-only CSS: hide everything except our overlay when printing
+  // Physically hide ALL existing body children (iOS Safari ignores @media print
+  // for dynamically injected styles — so we hide on-screen, not just in print)
+  const hiddenElements: { el: HTMLElement; prev: string }[] = []
+  Array.from(document.body.children).forEach((child) => {
+    const el = child as HTMLElement
+    if (el.id === 'plapp-print-overlay') return
+    hiddenElements.push({ el, prev: el.style.display })
+    el.style.display = 'none'
+  })
+
+  // Inject print CSS (page size + ensure overlay visible)
   const style = document.createElement('style')
   style.id = 'plapp-print-style'
   style.textContent = `
-    @media print {
-      body > *:not(#plapp-print-overlay) { display: none !important; }
-      #plapp-print-overlay {
-        display: block !important;
-        position: static !important;
-        background: white !important;
-      }
-      @page { size: landscape; margin: 8mm; }
-    }
+    @page { size: landscape; margin: 8mm; }
+    #plapp-print-overlay { display: block !important; background: white !important; }
   `
   document.head.appendChild(style)
 
-  // Create overlay div — visible full-screen so iOS Safari print preview sees it
+  // Create overlay div — the only visible element on page
   const overlay = document.createElement('div')
   overlay.id = 'plapp-print-overlay'
-  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;background:white;overflow:auto;'
+  overlay.style.cssText = 'position:relative;width:100%;background:white;'
   overlay.innerHTML = `
     <div style="font-family:Calibri,Arial,sans-serif;">
       <h1 style="font-family:Impact,'Arial Black',sans-serif;font-size:28pt;font-weight:normal;margin:0 0 4px 0;">
@@ -128,8 +131,19 @@ export function printList(_boatName: string, crewRows: ListRow[], passengers: Li
     window.removeEventListener('afterprint', cleanup)
     overlay.remove()
     style.remove()
+    // Restore all previously hidden elements
+    hiddenElements.forEach(({ el, prev }) => {
+      el.style.display = prev
+    })
   }
   window.addEventListener('afterprint', cleanup)
+
+  // Fallback: if afterprint doesn't fire (some iOS versions), restore after 5s
+  setTimeout(() => {
+    if (document.getElementById('plapp-print-overlay')) {
+      cleanup()
+    }
+  }, 5000)
 
   // Print synchronously to preserve user-gesture chain (iOS Safari
   // blocks window.print() when called from setTimeout/rAF)
