@@ -123,15 +123,13 @@ export function printList(_boatName: string, crewRows: ListRow[], passengers: Li
     })
   })
 
-  // Small delay for DOM render, then print
-  requestAnimationFrame(() => {
-    setTimeout(() => {
-      window.print()
-      // Clean up after print
-      setTimeout(() => {
-        overlay.remove()
-        style.remove()
-      }, 500)
-    }, 100)
-  })
+  // Print synchronously to preserve user-gesture chain (iOS Safari
+  // blocks window.print() when called from setTimeout/rAF)
+  window.print()
+
+  // Clean up after print dialog closes
+  setTimeout(() => {
+    overlay.remove()
+    style.remove()
+  }, 500)
 }
