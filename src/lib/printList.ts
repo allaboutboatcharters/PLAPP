@@ -123,13 +123,15 @@ export function printList(_boatName: string, crewRows: ListRow[], passengers: Li
     })
   })
 
+  // Clean up after print dialog closes (afterprint fires on iOS Safari too)
+  const cleanup = () => {
+    window.removeEventListener('afterprint', cleanup)
+    overlay.remove()
+    style.remove()
+  }
+  window.addEventListener('afterprint', cleanup)
+
   // Print synchronously to preserve user-gesture chain (iOS Safari
   // blocks window.print() when called from setTimeout/rAF)
   window.print()
-
-  // Clean up after print dialog closes
-  setTimeout(() => {
-    overlay.remove()
-    style.remove()
-  }, 500)
 }
