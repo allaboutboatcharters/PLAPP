@@ -47,8 +47,9 @@ onMounted(async () => {
   await crewStore.load()
   captains.value = crewStore.byRole('captain')
   assistants.value = crewStore.byRole('assistant')
-  captainId.value = captains.value[0]?.id ?? null
-  assistantId.value = assistants.value[0]?.id ?? null
+  // оставляем пустыми — пользователь выберет сам
+  captainId.value = null
+  assistantId.value = null
   await loadCandidates()
 })
 
@@ -153,12 +154,14 @@ async function share() {
         <div>
           <label>Captain (CAPTAIN)</label>
           <select v-model="captainId">
+            <option :value="null" disabled>— Select captain —</option>
             <option v-for="c in captains" :key="c.id" :value="c.id">{{ c.lastName }} {{ c.firstName }}</option>
           </select>
         </div>
         <div>
           <label>Assistant (CREW)</label>
           <select v-model="assistantId">
+            <option :value="null" disabled>— Select assistant —</option>
             <option v-for="c in assistants" :key="c.id" :value="c.id">{{ c.lastName }} {{ c.firstName }}</option>
           </select>
         </div>

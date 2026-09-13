@@ -35,45 +35,63 @@ const crewFields: { key: keyof Crew; label: string }[] = [
   { key: 'passportNumber', label: 'Passport Number' }
 ]
 
+// Modal state for editing crew member
+const editingCrew = ref<Crew | null>(null)
+
 async function addCrew(role: CrewRole) {
-  await crewStore.add(role)
+  const id = await crewStore.add(role)
+  // Open the new crew member in the modal right away
+  const added = crewStore.crew.find((c) => c.id === id)
+  if (added) editingCrew.value = { ...added }
 }
-async function saveCrew(c: Crew) {
-  if (c.id == null) return
+
+function openEdit(c: Crew) {
+  editingCrew.value = { ...c }
+}
+
+function closeEdit() {
+  editingCrew.value = null
+  fillError.value = ''
+}
+
+async function saveAndClose() {
+  const c = editingCrew.value
+  if (!c || c.id == null) return
   const { id, ...patch } = c
   await crewStore.update(id, patch)
+  editingCrew.value = null
 }
 
 const fillInput = ref<HTMLInputElement | null>(null)
 const fillingId = ref<number | null>(null)
 const fillError = ref('')
-let pendingCrewId: number | null = null
 
-function fillByPhoto(c: Crew) {
-  pendingCrewId = c.id ?? null
+function fillByPhoto() {
   fillError.value = ''
   fillInput.value?.click()
 }
 
 async function onFillFile(e: Event) {
   const file = (e.target as HTMLInputElement).files?.[0]
-  const id = pendingCrewId
-  if (!file || id == null) return
-  fillingId.value = id
+  const c = editingCrew.value
+  if (!file || !c || c.id == null) return
+  fillingId.value = c.id
   try {
     const s = await settingsStore.load()
     const { base64 } = await compressImage(file)
     const r = await recognizePassport([base64], { apiKey: s.apiKey, model: s.model })
-    await crewStore.update(id, {
+    // Update both the DB and the modal form
+    const patch = {
       lastName: r.lastName, firstName: r.firstName, dateOfBirth: r.dateOfBirth,
       placeOfBirth: r.placeOfBirth, nationality: r.nationality,
       issueDate: r.issueDate, expirationDate: r.expirationDate, passportNumber: r.passportNumber
-    })
+    }
+    await crewStore.update(c.id, patch)
+    Object.assign(editingCrew.value!, patch)
   } catch (err) {
     fillError.value = (err as Error).message
   } finally {
     fillingId.value = null
-    pendingCrewId = null
     if (fillInput.value) fillInput.value.value = ''
   }
 }
@@ -136,24 +154,73 @@ onMounted(async () => {
         <button class="secondary" @click="addCrew('captain')">+ Captain</button>
         <button class="secondary" @click="addCrew('assistant')">+ Assistant</button>
       </div>
-      <div v-if="fillError" class="card" style="border-color: var(--danger)">{{ fillError }}</div>
-      <div v-for="c in crewStore.crew" :key="c.id" class="card stack">
-        <div class="row" style="justify-content: space-between">
-          <span class="badge">{{ c.role === 'captain' ? 'CAPTAIN' : 'CREW' }}</span>
-          <button class="danger" style="width: auto" @click="crewStore.remove(c.id!)">✕</button>
-        </div>
-        <button class="ghost" :disabled="fillingId === c.id" @click="fillByPhoto(c)">
-          {{ fillingId === c.id ? 'Recognizing…' : '📷 Fill from passport photo' }}
-        </button>
-        <div v-for="f in crewFields" :key="String(f.key)">
-          <label>{{ f.label }}</label>
-          <input v-model="(c as any)[f.key]" @change="saveCrew(c)" />
-        </div>
+
+      <!-- Captains list -->
+      <h3 v-if="crewStore.crew.filter(c => c.role === 'captain').length">Captains</h3>
+      <div
+        v-for="c in crewStore.crew.filter(c => c.role === 'captain')"
+        :key="c.id"
+        class="card row"
+        style="justify-content: space-between; cursor: pointer"
+        @click="openEdit(c)"
+      >
         <div>
-          <label>Remarks (default SXM)</label>
-          <input v-model="c.remark" @change="saveCrew(c)" />
+          <b>{{ c.lastName || '—' }} {{ c.firstName || '' }}</b>
+          <div class="muted" style="font-size: 0.82rem">{{ c.passportNumber || 'No passport' }}</div>
+        </div>
+        <div class="row" style="gap: 6px; flex-shrink: 0">
+          <button class="ghost" style="width: auto; min-height: 40px; padding: 0 12px" @click.stop="openEdit(c)">✏️</button>
+          <button class="danger" style="width: auto; min-height: 40px; padding: 0 12px" @click.stop="crewStore.remove(c.id!)">✕</button>
         </div>
       </div>
+
+      <!-- Assistants list -->
+      <h3 v-if="crewStore.crew.filter(c => c.role === 'assistant').length">Assistants</h3>
+      <div
+        v-for="c in crewStore.crew.filter(c => c.role === 'assistant')"
+        :key="c.id"
+        class="card row"
+        style="justify-content: space-between; cursor: pointer"
+        @click="openEdit(c)"
+      >
+        <div>
+          <b>{{ c.lastName || '—' }} {{ c.firstName || '' }}</b>
+          <div class="muted" style="font-size: 0.82rem">{{ c.passportNumber || 'No passport' }}</div>
+        </div>
+        <div class="row" style="gap: 6px; flex-shrink: 0">
+          <button class="ghost" style="width: auto; min-height: 40px; padding: 0 12px" @click.stop="openEdit(c)">✏️</button>
+          <button class="danger" style="width: auto; min-height: 40px; padding: 0 12px" @click.stop="crewStore.remove(c.id!)">✕</button>
+        </div>
+      </div>
+
+      <!-- Edit modal (overlay) -->
+      <Teleport to="body">
+        <div v-if="editingCrew" class="modal-overlay" @click.self="closeEdit">
+          <div class="modal-sheet">
+            <div class="row" style="justify-content: space-between; margin-bottom: 8px">
+              <span class="badge">{{ editingCrew.role === 'captain' ? 'CAPTAIN' : 'CREW' }}</span>
+              <button class="ghost" style="width: auto; min-height: 36px; padding: 0 12px" @click="closeEdit">✕</button>
+            </div>
+
+            <div v-if="fillError" class="card" style="border-color: var(--danger); margin: 0 0 8px">{{ fillError }}</div>
+
+            <button class="ghost" style="margin-bottom: 8px" :disabled="fillingId === editingCrew.id" @click="fillByPhoto">
+              {{ fillingId === editingCrew.id ? 'Recognizing…' : '📷 Fill from passport photo' }}
+            </button>
+
+            <div v-for="f in crewFields" :key="String(f.key)">
+              <label>{{ f.label }}</label>
+              <input v-model="(editingCrew as any)[f.key]" />
+            </div>
+            <div>
+              <label>Remarks (default SXM)</label>
+              <input v-model="editingCrew.remark" />
+            </div>
+
+            <button style="margin-top: 16px" @click="saveAndClose">Save</button>
+          </div>
+        </div>
+      </Teleport>
     </section>
 
     <!-- API -->
