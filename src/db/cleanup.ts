@@ -25,4 +25,6 @@ export function installCleanupHooks(): void {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') void cleanupExpiredScans()
   })
+  // Страховка: чистим каждый час, даже если visibilitychange не сработал
+  setInterval(() => void cleanupExpiredScans(), 3_600_000)
 }

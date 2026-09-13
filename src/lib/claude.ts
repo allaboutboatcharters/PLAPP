@@ -54,12 +54,18 @@ export interface ClaudeConfig {
   model: string
 }
 
+const API_TIMEOUT_MS = 60_000
+
 /** Распознаёт паспорт по одному или нескольким base64-изображениям (JPEG). */
 export async function recognizePassport(
   images: string[],
   config: ClaudeConfig
 ): Promise<RecognitionResult> {
   if (!config.apiKey) throw new Error('API key not set (Settings → API Key)')
+  if (!navigator.onLine) throw new Error('No internet connection. Check your network and try again.')
+
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS)
 
   const content = [
     ...images.map((base64) => ({
@@ -69,23 +75,34 @@ export async function recognizePassport(
     { type: 'text' as const, text: 'Extract document data using the extract_passport tool.' }
   ]
 
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-api-key': config.apiKey,
-      'anthropic-version': API_VERSION,
-      'anthropic-dangerous-direct-browser-access': 'true'
-    },
-    body: JSON.stringify({
-      model: config.model,
-      max_tokens: 1024,
-      system: SYSTEM_PROMPT,
-      tools: [EXTRACT_TOOL],
-      tool_choice: { type: 'tool', name: 'extract_passport' },
-      messages: [{ role: 'user', content }]
+  let res: Response
+  try {
+    res = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': config.apiKey,
+        'anthropic-version': API_VERSION,
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        model: config.model,
+        max_tokens: 1024,
+        system: SYSTEM_PROMPT,
+        tools: [EXTRACT_TOOL],
+        tool_choice: { type: 'tool', name: 'extract_passport' },
+        messages: [{ role: 'user', content }]
+      })
     })
-  })
+  } catch (err) {
+    if ((err as Error).name === 'AbortError') {
+      throw new Error('Request timed out after 60 seconds. Try again.')
+    }
+    throw err
+  } finally {
+    clearTimeout(timeout)
+  }
 
   if (!res.ok) {
     let detail = ''
