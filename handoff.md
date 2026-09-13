@@ -1,51 +1,53 @@
 # Handoff — PLAPP (Crew & Passenger List PWA)
 
 > Снимок состояния на конец сессии. Файл перезаписывается каждый раз, историю не хранит.
-> Обновлено: 10.09.2026 10:58 AST
+> Обновлено: 13.09.2026 11:16 AST
 
 ## Текущее состояние (одним абзацем)
 Приложение задеплоено на GitHub Pages (https://allaboutboatcharters.github.io/PLAPP/),
-репо публичное. Весь UI на английском. XLSX генерируется по образцу с границами,
-датами как Date (m/d/yyyy), min 10 строк пассажиров. Добавление пассажиров в
-существующий список работает. Печать через window.print() на iOS Safari так и не
-заработала (несколько попыток: iframe, overlay, @media print, физическое скрытие UI —
-Safari всё равно печатает UI приложения). Вместо Print добавлена кнопка **Save PDF** —
-генерация PDF через jsPDF + jspdf-autotable прямо на устройстве, landscape A4.
-`npm run build` проходит чисто. Автодеплой через GitHub Actions при push в main.
+репо публичное. Весь UI на английском. XLSX генерируется по образцу. Save PDF работает
+(jsPDF landscape A4). Crew CRUD переделан: в Settings → Crew отображается компактный
+список с кнопками edit/delete, карточка редактирования открывается в модальном
+bottom-sheet окне. При создании списка captain/assistant не выбраны по умолчанию —
+пользователь выбирает из dropdown. Дефолтная модель распознавания паспортов —
+`claude-haiku-4-5-20251001` (дешевле sonnet). `npm run build` проходит чисто.
+Автодеплой через GitHub Actions при push в main.
 
 ## Сделано в этой сессии
-- Попытка fix печати iOS Safari: физическое скрытие всех body children + overlay —
-  не помогло (Safari всё равно рендерит UI вместо overlay).
-- Заменена кнопка Print на **Save PDF** (jsPDF + jspdf-autotable):
-  - Landscape A4, таблица с рамками, заголовок, footer с текстом Toelatingsbesluit.
-  - Файл: `Crew and Passenger List - {boatName}.pdf`.
-  - Кнопка добавлена во все 3 вью: CreateList, AddPassengers, ListDetail.
-- Установлены пакеты: `jspdf`, `jspdf-autotable`, `@types/node`.
+- CreateList: убран автовыбор первого captain/assistant, добавлены placeholder
+  "— Select captain —" / "— Select assistant —".
+- Settings → Crew переделан в нормальный CRUD:
+  - Список капитанов и ассистентов отдельными группами (имя + номер паспорта).
+  - Кнопки ✏️ (edit) и ✕ (delete) на каждой записи.
+  - Карточка редактирования — modal bottom-sheet (Teleport to body) с полями,
+    кнопкой "📷 Fill from passport photo" и Save.
+  - При добавлении нового crew сразу открывается модалка.
+- Модель распознавания паспортов сменена на `claude-haiku-4-5-20251001`
+  (claude-3-5-haiku депрекейтнут, 404).
 
 ## В работе / не закоммичено
 Всё закоммичено, рабочее дерево чистое.
 
 ## Следующие шаги
-1. **Протестировать Save PDF на iPhone** — убедиться, что PDF скачивается/открывается,
-   landscape ориентация, данные на месте.
-2. Завести реальные данные: 10 лодок и 6+6 экипажа в Настройках.
-3. Прогон полного цикла на телефоне с реальными паспортами.
-4. Подсказка в UI про возможность напечатать скачанный PDF из Files/Preview.
+1. Протестировать распознавание паспортов на `claude-haiku-4-5-20251001` — качество.
+2. Протестировать Save PDF на iPhone — скачивается ли, landscape, данные.
+3. Засеять реальные данные: лодки и экипаж в Settings.
+4. Полный цикл на телефоне с реальными паспортами.
+5. Удалить неиспользуемый `src/lib/printList.ts`.
 
 ## Открытые вопросы / решения к принятию
-- window.print() на iOS Safari не работает для кастомного контента в PWA —
-  окончательно заменён на PDF-генерацию. Старый printList.ts остался в коде
-  (не импортируется) — удалить?
+- Качество распознавания на Haiku 4.5 — протестировать на реальных паспортах.
 - Список лодок и ФИО экипажа для засидки — пока не предоставлены.
+- Старый printList.ts остался в коде (не импортируется) — удалить?
 
 ## Полезное для быстрого старта
 - Последние коммиты:
-  - 2a01cba Save PDF вместо Print: jsPDF landscape, работает на iOS Safari
-  - 6bc37d1 Print: физически скрываем UI вместо @media print (fix iOS Safari)
-  - 25cad71 Print: overlay поверх страницы вместо display:none (fix iOS Safari preview)
+  - de7f1f3 Fix: модель claude-haiku-4-5-20251001 (3.5 haiku депрекейтнут)
+  - 467ae4a Crew CRUD: список с кнопками edit/delete, карточка в модальном окне
+  - c2ef43a Handoff: сессия 10.09 — Save PDF вместо Print
 - URL: https://allaboutboatcharters.github.io/PLAPP/
 - Команды: `npm install`, `npm run dev`, `npm run dev:lan`, `npm run build`.
-- Важные файлы: `src/lib/savePdf.ts` (PDF-генерация), `src/lib/passengerListWorkbook.ts` (XLSX),
-  `src/lib/claude.ts`, `src/lib/printList.ts` (старый, не используется),
-  `src/views/AddPassengers.vue`, `src/views/CreateList.vue`, `src/views/ListDetail.vue`.
+- Важные файлы: `src/views/Settings.vue` (crew CRUD + modal), `src/views/CreateList.vue`,
+  `src/styles.css` (modal-overlay/modal-sheet стили), `src/db/dexie.ts` (модель дефолт),
+  `src/lib/claude.ts` (промпт распознавания), `src/lib/savePdf.ts`.
 - Образец XLSX: `~/.hermes/cache/documents/doc_d768cec7faf0_Crew_and_Passenger_List_Rumbelly_2.xlsx`
