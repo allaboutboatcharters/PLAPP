@@ -35,6 +35,13 @@ async function bootstrap() {
   const app = createApp(App)
   app.use(createPinia())
   app.use(router)
+
+  // Глобальный обработчик ошибок Vue-компонентов
+  app.config.errorHandler = (err, _instance, info) => {
+    console.error(`[PLAPP] Unhandled error (${info}):`, err)
+    alert(`An unexpected error occurred. Please try again.\n\n${(err as Error).message ?? err}`)
+  }
+
   app.mount('#app')
 }
 

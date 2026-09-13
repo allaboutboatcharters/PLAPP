@@ -23,6 +23,11 @@ async function addBoat() {
   newBoatName.value = ''
 }
 
+function confirmRemoveBoat(id: number, name: string) {
+  if (!confirm(`Delete boat "${name}"?`)) return
+  boatsStore.remove(id)
+}
+
 // --- crew ---
 const crewFields: { key: keyof Crew; label: string }[] = [
   { key: 'lastName', label: 'Last Name' },
@@ -47,6 +52,12 @@ async function addCrew(role: CrewRole) {
 
 function openEdit(c: Crew) {
   editingCrew.value = { ...c }
+}
+
+function confirmRemoveCrew(c: Crew) {
+  const name = [c.firstName, c.lastName].filter(Boolean).join(' ') || 'this crew member'
+  if (!confirm(`Delete ${name}?`)) return
+  crewStore.remove(c.id!)
 }
 
 function closeEdit() {
@@ -137,7 +148,7 @@ onMounted(async () => {
       </div>
       <div v-for="b in boatsStore.boats" :key="b.id" class="card row">
         <input :value="b.name" @change="(e) => boatsStore.update(b.id!, { name: (e.target as HTMLInputElement).value })" />
-        <button class="danger" style="width: auto" @click="boatsStore.remove(b.id!)">✕</button>
+        <button class="danger" style="width: auto" @click="confirmRemoveBoat(b.id!, b.name)">✕</button>
       </div>
     </section>
 
@@ -170,7 +181,7 @@ onMounted(async () => {
         </div>
         <div class="row" style="gap: 6px; flex-shrink: 0">
           <button class="ghost" style="width: auto; min-height: 40px; padding: 0 12px" @click.stop="openEdit(c)">✏️</button>
-          <button class="danger" style="width: auto; min-height: 40px; padding: 0 12px" @click.stop="crewStore.remove(c.id!)">✕</button>
+          <button class="danger" style="width: auto; min-height: 40px; padding: 0 12px" @click.stop="confirmRemoveCrew(c)">✕</button>
         </div>
       </div>
 
@@ -189,7 +200,7 @@ onMounted(async () => {
         </div>
         <div class="row" style="gap: 6px; flex-shrink: 0">
           <button class="ghost" style="width: auto; min-height: 40px; padding: 0 12px" @click.stop="openEdit(c)">✏️</button>
-          <button class="danger" style="width: auto; min-height: 40px; padding: 0 12px" @click.stop="crewStore.remove(c.id!)">✕</button>
+          <button class="danger" style="width: auto; min-height: 40px; padding: 0 12px" @click.stop="confirmRemoveCrew(c)">✕</button>
         </div>
       </div>
 
