@@ -104,7 +104,7 @@ export async function getSettings(): Promise<Settings> {
     s = {
       id: SETTINGS_ID,
       apiKey: '',
-      model: 'claude-sonnet-5',
+      model: 'claude-haiku-3-5-20241022',
       crewRemarkDefault: 'SXM',
       filenamePrefix: 'Crew and Passenger List',
       storagePersisted: false
