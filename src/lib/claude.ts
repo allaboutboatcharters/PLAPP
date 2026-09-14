@@ -56,6 +56,9 @@ export interface ClaudeConfig {
 
 const API_TIMEOUT_MS = 60_000
 
+/** Prevents concurrent API calls (debounce/rate-limit). */
+let pendingRequest = false
+
 /** Распознаёт паспорт по одному или нескольким base64-изображениям (JPEG). */
 export async function recognizePassport(
   images: string[],
@@ -63,7 +66,9 @@ export async function recognizePassport(
 ): Promise<RecognitionResult> {
   if (!config.apiKey) throw new Error('API key not set (Settings → API Key)')
   if (!navigator.onLine) throw new Error('No internet connection. Check your network and try again.')
+  if (pendingRequest) throw new Error('Recognition already in progress. Please wait.')
 
+  pendingRequest = true
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS)
 
@@ -102,6 +107,7 @@ export async function recognizePassport(
     throw err
   } finally {
     clearTimeout(timeout)
+    pendingRequest = false
   }
 
   if (!res.ok) {
