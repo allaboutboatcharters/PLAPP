@@ -44,6 +44,10 @@ async function bootstrap() {
   }
 
   app.mount('#app')
+
+  // Hide splash screen
+  const splash = document.getElementById('splash')
+  if (splash) splash.classList.add('hidden')
 }
 
 void bootstrap()

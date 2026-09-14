@@ -4,15 +4,22 @@
     <meta charset="UTF-8" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.anthropic.com; img-src 'self' blob: data:; font-src 'self';" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-    <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon-180.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="theme-color" content="#0b3d5c" />
+    <meta name="description" content="Crew and Passenger List generator for charter boats in Sint Maarten. Scan passports, generate immigration forms." />
     <title>Crew &amp; Passenger List</title>
+    <style>
+      /* Splash screen shown before Vue mounts */
+      .splash { display: flex; align-items: center; justify-content: center; height: 100vh; background: #0b1720; color: #9fb6c2; font-family: -apple-system, sans-serif; font-size: 1.1rem; }
+      .splash.hidden { display: none; }
+    </style>
   </head>
   <body>
     <div id="app"></div>
+    <div id="splash" class="splash">Loading PLAPP…</div>
     <script>
       // GitHub Pages SPA: restore path from 404.html redirect query string
       (function(l) {

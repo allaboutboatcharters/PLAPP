@@ -11,8 +11,8 @@ export default defineConfig({
     vue(),
     ...(useSsl ? [basicSsl()] : []),
     VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      registerType: 'prompt',
+      includeAssets: ['favicon.svg', 'icons/apple-touch-icon-180.png'],
       manifest: {
         name: 'Crew & Passenger List',
         short_name: 'PLAPP',
