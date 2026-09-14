@@ -11,12 +11,14 @@ const scansStore = useScansStore()
 
 const boatName = ref('')
 const readyCount = ref(0)
+const loading = ref(true)
 
 onMounted(async () => {
   const boatId = Number(props.id)
   const boat = await boatsStore.get(boatId)
   boatName.value = boat?.name ?? 'Boat'
   readyCount.value = await scansStore.readyCount(boatId)
+  loading.value = false
 })
 </script>
 
@@ -28,17 +30,21 @@ onMounted(async () => {
       <span style="width: 60px"></span>
     </div>
 
-    <div class="stack">
-      <button @click="router.push(`/boat/${id}/capture`)">📷 Add passport</button>
-      <button @click="router.push(`/boat/${id}/new-list`)">
-        📋 Create Passenger List
-        <span v-if="readyCount" class="badge">{{ readyCount }}</span>
-      </button>
-      <button class="secondary" @click="router.push('/history')">🕘 History</button>
-    </div>
+    <div v-if="loading" class="card center muted">Loading…</div>
 
-    <p class="muted center" style="margin-top: 16px">
-      Ready scans for this boat: {{ readyCount }}
-    </p>
+    <template v-else>
+      <div class="stack">
+        <button @click="router.push(`/boat/${id}/capture`)">📷 Add passport</button>
+        <button @click="router.push(`/boat/${id}/new-list`)">
+          📋 Create Passenger List
+          <span v-if="readyCount" class="badge">{{ readyCount }}</span>
+        </button>
+        <button class="secondary" @click="router.push('/history')">🕘 History</button>
+      </div>
+
+      <p class="muted center" style="margin-top: 16px">
+        Ready scans for this boat: {{ readyCount }}
+      </p>
+    </template>
   </div>
 </template>

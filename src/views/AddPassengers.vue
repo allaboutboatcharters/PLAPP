@@ -86,7 +86,7 @@ async function addPassengers(): Promise<void> {
     allPassengers.forEach((r, i) => (r.seq = i + 1))
 
     // Rebuild XLSX
-    const blob = await buildPassengerListWorkbook(plainCrewRows, allPassengers)
+    const blob = await buildPassengerListWorkbook(plainCrewRows, allPassengers, l.boatName)
 
     // Update the list in DB
     await listsStore.update(l.id!, {

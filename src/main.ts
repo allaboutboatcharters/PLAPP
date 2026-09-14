@@ -3,6 +3,7 @@ import { createPinia } from 'pinia'
 import { router } from './router'
 import { getSettings, db } from './db/dexie'
 import { installCleanupHooks } from './db/cleanup'
+import { showToast } from './composables/useToast'
 import App from './App.vue'
 import './styles.css'
 
@@ -39,7 +40,7 @@ async function bootstrap() {
   // Глобальный обработчик ошибок Vue-компонентов
   app.config.errorHandler = (err, _instance, info) => {
     console.error(`[PLAPP] Unhandled error (${info}):`, err)
-    alert(`An unexpected error occurred. Please try again.\n\n${(err as Error).message ?? err}`)
+    showToast(`Error: ${(err as Error).message ?? err}`, 6000)
   }
 
   app.mount('#app')

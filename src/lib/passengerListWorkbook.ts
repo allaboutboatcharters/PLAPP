@@ -108,7 +108,8 @@ function writeDataRow(
 
 export async function buildPassengerListWorkbook(
   crewRows: ListRow[],
-  passengers: ListRow[]
+  passengers: ListRow[],
+  boatName?: string
 ): Promise<Blob> {
   const wb = new ExcelJS.Workbook()
   const ws = wb.addWorksheet(SHEET_NAME)
@@ -121,7 +122,10 @@ export async function buildPassengerListWorkbook(
   const titleRow = ws.getRow(1)
   titleRow.height = 45
   const titleCell = titleRow.getCell(2)
-  titleCell.value = TITLE
+  const titleText = boatName
+    ? `${TITLE}  —  ${boatName.toUpperCase()}`
+    : TITLE
+  titleCell.value = titleText
   titleCell.font = { name: IMPACT, size: 36 }
 
   // Row 2: Headers (Times New Roman 10)

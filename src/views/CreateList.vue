@@ -91,7 +91,7 @@ async function generate(): Promise<void> {
     crewRows.forEach((r, i) => (r.seq = i + 1))
     passengers.forEach((r, i) => (r.seq = i + 1))
 
-    const blob = await buildPassengerListWorkbook(crewRows, passengers)
+    const blob = await buildPassengerListWorkbook(crewRows, passengers, boatName.value)
     const s = await settingsStore.load()
     generatedName.value = `${s.filenamePrefix}.xlsx`
     generatedBlob.value = blob

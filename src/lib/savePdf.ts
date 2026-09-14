@@ -70,7 +70,10 @@ export function savePdf(boatName: string, crewRows: ListRow[], passengers: ListR
   // Title
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(20)
-  doc.text('CREW AND PASSENGER LIST', 14, 15)
+  const pdfTitle = boatName
+    ? `CREW AND PASSENGER LIST — ${boatName.toUpperCase()}`
+    : 'CREW AND PASSENGER LIST'
+  doc.text(pdfTitle, 14, 15)
 
   // Table
   autoTable(doc, {
