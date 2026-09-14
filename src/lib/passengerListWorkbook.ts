@@ -27,7 +27,6 @@ const COL_WIDTHS = [2.96, 16.81, 30.0, 17.62, 20.71, 13.0, 13.03, 14.93, 16.68, 
 
 const MIN_PASSENGER_ROWS = 10
 const DATA_START_ROW = 3
-const CREW_COUNT = 2
 
 const FOOTER_LINES = [
   'In adherence to article 15 (1) (a)(b)(c)(d) and article 15 (2) of the Toelatingsbesluit,',
@@ -136,7 +135,7 @@ export async function buildPassengerListWorkbook(
 
   // Calculate passenger slot count: at least MIN_PASSENGER_ROWS
   const passengerSlots = Math.max(passengers.length, MIN_PASSENGER_ROWS)
-  const totalDataRows = CREW_COUNT + passengerSlots
+  const totalDataRows = crewRows.length + passengerSlots
 
   // Data rows starting at row 3
   let rowIdx = DATA_START_ROW

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, shallowRef } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBoatsStore } from '../stores/boats'
 import { useCrewStore } from '../stores/crew'
@@ -10,6 +10,7 @@ import { buildPassengerListWorkbook } from '../lib/passengerListWorkbook'
 import { shareOrDownload } from '../lib/share'
 import { savePdf } from '../lib/savePdf'
 import { todayISO } from '../lib/formatters'
+import { crewToRow, scanToRow } from '../lib/listHelpers'
 import type { Crew, ListRow, PassportScan } from '../db/dexie'
 
 const props = defineProps<{ id: string }>()
@@ -34,10 +35,10 @@ type Phase = 'select' | 'done'
 const phase = ref<Phase>('select')
 const generating = ref(false)
 const errorMsg = ref('')
-let generatedBlob: Blob | null = null
-let generatedName = 'Crew and Passenger List.xlsx'
-let lastCrewRows: ListRow[] = []
-let lastPassengers: ListRow[] = []
+const generatedBlob = shallowRef<Blob | null>(null)
+const generatedName = ref('Crew and Passenger List.xlsx')
+const lastCrewRows = shallowRef<ListRow[]>([])
+const lastPassengers = shallowRef<ListRow[]>([])
 
 const canGenerate = computed(() => captainId.value != null && assistantId.value != null)
 
@@ -68,26 +69,7 @@ function toggle(id: number) {
   selected.value = s
 }
 
-function crewToRow(c: Crew, rank: string): ListRow {
-  return {
-    seq: 0, rank, remark: c.remark || 'SXM',
-    lastName: c.lastName, firstName: c.firstName, dateOfBirth: c.dateOfBirth,
-    placeOfBirth: c.placeOfBirth, nationality: c.nationality,
-    issueDate: c.issueDate, expirationDate: c.expirationDate, passportNumber: c.passportNumber
-  }
-}
-
-function scanToRow(s: PassportScan): ListRow {
-  const e = s.extracted
-  return {
-    seq: 0, rank: 'Passenger', remark: s.remark,
-    lastName: e.lastName, firstName: e.firstName, dateOfBirth: e.dateOfBirth,
-    placeOfBirth: e.placeOfBirth, nationality: e.nationality,
-    issueDate: e.issueDate, expirationDate: e.expirationDate, passportNumber: e.passportNumber
-  }
-}
-
-async function generate() {
+async function generate(): Promise<void> {
   if (!canGenerate.value) return
   errorMsg.value = ''
   generating.value = true
@@ -111,17 +93,17 @@ async function generate() {
 
     const blob = await buildPassengerListWorkbook(crewRows, passengers)
     const s = await settingsStore.load()
-    generatedName = `${s.filenamePrefix}.xlsx`
-    generatedBlob = blob
-    lastCrewRows = crewRows
-    lastPassengers = passengers
+    generatedName.value = `${s.filenamePrefix}.xlsx`
+    generatedBlob.value = blob
+    lastCrewRows.value = crewRows
+    lastPassengers.value = passengers
 
     const listId = await listsStore.save({
       boatId, boatName: boatName.value, date: todayISO(), createdAt: Date.now(),
       captainId: captainId.value, assistantId: assistantId.value,
       crewRows, passengers,
       crewCount: crewRows.length, passengerCount: passengers.length,
-      fileName: generatedName, xlsxBlob: blob
+      fileName: generatedName.value, xlsxBlob: blob
     })
 
     // пометить использованные сканы
@@ -136,8 +118,8 @@ async function generate() {
   }
 }
 
-async function share() {
-  if (generatedBlob) await shareOrDownload(generatedBlob, generatedName)
+async function share(): Promise<void> {
+  if (generatedBlob.value) await shareOrDownload(generatedBlob.value, generatedName.value)
 }
 </script>
 

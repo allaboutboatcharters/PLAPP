@@ -1,8 +1,3 @@
-const MONTHS_EN = [
-  'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
-  'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'
-]
-
 /**
  * Внутренний формат дат — DD.MM.YYYY. Парсим в компоненты.
  * Возвращает null, если строка не разбирается.
@@ -15,14 +10,6 @@ export function parseInternalDate(s: string): { d: number; m: number; y: number 
   const y = Number(m[3])
   if (d < 1 || d > 31 || mo < 1 || mo > 12) return null
   return { d, m: mo, y }
-}
-
-/** DD.MM.YYYY → "18 MAR 2002" (DD MON YYYY, англ. месяц капсом) для XLSX. */
-export function toExcelDate(s: string): string {
-  const p = parseInternalDate(s)
-  if (!p) return s.trim().toUpperCase()
-  const dd = String(p.d).padStart(2, '0')
-  return `${dd} ${MONTHS_EN[p.m - 1]} ${p.y}`
 }
 
 /** Верхний регистр с сохранением исходных пробелов/дефисов (для имён, мест). */

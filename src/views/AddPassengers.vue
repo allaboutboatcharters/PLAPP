@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, shallowRef } from 'vue'
 import { useRouter } from 'vue-router'
 import { useScansStore } from '../stores/scans'
 import { useListsStore } from '../stores/lists'
 import { buildPassengerListWorkbook } from '../lib/passengerListWorkbook'
 import { shareOrDownload } from '../lib/share'
 import { savePdf } from '../lib/savePdf'
+import { scanToRow, cloneRows } from '../lib/listHelpers'
 import type { PassengerList, PassportScan, ListRow } from '../db/dexie'
 
 const props = defineProps<{ listId: string }>()
@@ -21,16 +22,16 @@ type Phase = 'select' | 'done'
 const phase = ref<Phase>('select')
 const adding = ref(false)
 const errorMsg = ref('')
-let generatedBlob: Blob | null = null
-let generatedName = ''
-let lastCrewRows: ListRow[] = []
-let lastPassengers: ListRow[] = []
+const generatedBlob = shallowRef<Blob | null>(null)
+const generatedName = ref('')
+const lastCrewRows = shallowRef<ListRow[]>([])
+const lastPassengers = shallowRef<ListRow[]>([])
 
 onMounted(async () => {
   const l = await listsStore.get(Number(props.listId))
   if (!l) { router.push('/history'); return }
   list.value = l
-  generatedName = l.fileName
+  generatedName.value = l.fileName
 
   // Get scans that are ready for this boat, excluding those already in THIS list
   const existingNumbers = new Set(l.passengers.map(p => p.passportNumber.trim()))
@@ -50,19 +51,9 @@ function toggle(id: number) {
   selected.value = s
 }
 
-function scanToRow(s: PassportScan): ListRow {
-  const e = s.extracted
-  return {
-    seq: 0, rank: 'Passenger', remark: s.remark,
-    lastName: e.lastName, firstName: e.firstName, dateOfBirth: e.dateOfBirth,
-    placeOfBirth: e.placeOfBirth, nationality: e.nationality,
-    issueDate: e.issueDate, expirationDate: e.expirationDate, passportNumber: e.passportNumber
-  }
-}
-
 const canAdd = computed(() => selected.value.size > 0)
 
-async function addPassengers() {
+async function addPassengers(): Promise<void> {
   if (!list.value || !canAdd.value) return
   errorMsg.value = ''
   adding.value = true
@@ -70,19 +61,9 @@ async function addPassengers() {
     const l = list.value
     const chosen = candidates.value.filter(s => selected.value.has(s.id!))
 
-    // Deep-clone existing passengers to strip Vue reactivity
-    const existingPassengers: ListRow[] = l.passengers.map(p => ({
-      seq: p.seq, rank: p.rank, remark: p.remark,
-      lastName: p.lastName, firstName: p.firstName, dateOfBirth: p.dateOfBirth,
-      placeOfBirth: p.placeOfBirth, nationality: p.nationality,
-      issueDate: p.issueDate, expirationDate: p.expirationDate, passportNumber: p.passportNumber
-    }))
-    const plainCrewRows: ListRow[] = l.crewRows.map(c => ({
-      seq: c.seq, rank: c.rank, remark: c.remark,
-      lastName: c.lastName, firstName: c.firstName, dateOfBirth: c.dateOfBirth,
-      placeOfBirth: c.placeOfBirth, nationality: c.nationality,
-      issueDate: c.issueDate, expirationDate: c.expirationDate, passportNumber: c.passportNumber
-    }))
+    // Deep-clone existing rows to strip Vue reactivity
+    const existingPassengers = cloneRows(l.passengers)
+    const plainCrewRows = cloneRows(l.crewRows)
 
     // Dedupe by passport number (also against existing passengers)
     const existingNumbers = new Set(existingPassengers.map(p => p.passportNumber.trim()))
@@ -119,9 +100,9 @@ async function addPassengers() {
       if (s.id != null) await scansStore.update(s.id, { usedInListId: l.id! })
     }
 
-    generatedBlob = blob
-    lastCrewRows = plainCrewRows
-    lastPassengers = allPassengers
+    generatedBlob.value = blob
+    lastCrewRows.value = plainCrewRows
+    lastPassengers.value = allPassengers
     phase.value = 'done'
   } catch (err) {
     errorMsg.value = (err as Error).message
@@ -130,8 +111,8 @@ async function addPassengers() {
   }
 }
 
-async function share() {
-  if (generatedBlob) await shareOrDownload(generatedBlob, generatedName)
+async function share(): Promise<void> {
+  if (generatedBlob.value) await shareOrDownload(generatedBlob.value, generatedName.value)
 }
 </script>
 
