@@ -25,7 +25,6 @@ const HEADERS = [
 
 const COL_WIDTHS = [2.96, 16.81, 30.0, 17.62, 20.71, 13.0, 13.03, 14.93, 16.68, 17.08, 17.22]
 
-const MIN_PASSENGER_ROWS = 10
 const DATA_START_ROW = 3
 
 const FOOTER_LINES = [
@@ -78,8 +77,8 @@ function writeDataRow(
   r: ListRow | null, isFirstRow: boolean, isLastRow: boolean
 ) {
   const row = ws.getRow(rowIdx)
-  row.height = 19.5
-  const font: Partial<ExcelJS.Font> = { name: CALIBRI, size: 11 }
+  row.height = 15
+  const font: Partial<ExcelJS.Font> = { name: CALIBRI, size: 9 }
 
   row.getCell(1).value = seq
   row.getCell(1).alignment = { horizontal: 'left' }
@@ -120,13 +119,13 @@ export async function buildPassengerListWorkbook(
 
   // Row 1: Title in B1 (Impact 36)
   const titleRow = ws.getRow(1)
-  titleRow.height = 45
+  titleRow.height = 38
   const titleCell = titleRow.getCell(2)
   const titleText = boatName
     ? `${TITLE}  —  ${boatName.toUpperCase()}`
     : TITLE
   titleCell.value = titleText
-  titleCell.font = { name: IMPACT, size: 36 }
+  titleCell.font = { name: IMPACT, size: 28 }
 
   // Row 2: Headers (Times New Roman 10)
   const headerRow = ws.getRow(2)
@@ -137,9 +136,8 @@ export async function buildPassengerListWorkbook(
     cell.font = { name: TIMES, size: 10 }
   })
 
-  // Calculate passenger slot count: at least MIN_PASSENGER_ROWS
-  const passengerSlots = Math.max(passengers.length, MIN_PASSENGER_ROWS)
-  const totalDataRows = crewRows.length + passengerSlots
+  // Only real passengers, no empty padding rows
+  const totalDataRows = crewRows.length + passengers.length
 
   // Data rows starting at row 3
   let rowIdx = DATA_START_ROW
@@ -151,12 +149,11 @@ export async function buildPassengerListWorkbook(
     writeDataRow(ws, rowIdx++, i + 1, r, isFirst, isLast)
   })
 
-  // Passengers
-  for (let i = 0; i < passengerSlots; i++) {
-    const p = i < passengers.length ? passengers[i] : null
+  // Passengers (only real data, no empty padding)
+  for (let i = 0; i < passengers.length; i++) {
     const isFirst = false // crew rows come before
-    const isLast = i === passengerSlots - 1
-    writeDataRow(ws, rowIdx++, i + 1, p, isFirst, isLast)
+    const isLast = i === passengers.length - 1
+    writeDataRow(ws, rowIdx++, i + 1, passengers[i], isFirst, isLast)
   }
 
   // Footer
@@ -164,8 +161,24 @@ export async function buildPassengerListWorkbook(
   for (let i = 0; i < FOOTER_LINES.length; i++) {
     const cell = ws.getCell(`A${footerStart + i}`)
     cell.value = FOOTER_LINES[i]
-    cell.font = { name: CALIBRI, size: 11 }
+    cell.font = { name: CALIBRI, size: 9 }
   }
+
+  // Page setup: fit everything on one A4 landscape page
+  ws.pageSetup = {
+    orientation: 'landscape',
+    paperSize: 9, // A4
+    fitToPage: true,
+    fitToWidth: 1,
+    fitToHeight: 1,
+    margins: {
+      left: 0.25, right: 0.25,
+      top: 0.3, bottom: 0.3,
+      header: 0.1, footer: 0.1,
+    },
+  }
+  const lastRow = footerStart + FOOTER_LINES.length - 1
+  ws.pageSetup.printArea = `A1:K${lastRow}`
 
   const buffer = await wb.xlsx.writeBuffer()
   return new Blob([buffer], {

@@ -14,10 +14,7 @@ function fmtDate(s: string): string {
  * Uses jsPDF + autotable — no browser print dialog, works on iOS Safari.
  */
 export function savePdf(boatName: string, crewRows: ListRow[], passengers: ListRow[]) {
-  const MIN_ROWS = 10
-  const passengerSlots = Math.max(passengers.length, MIN_ROWS)
-
-  // Build table data
+  // Build table data — only real rows, no empty padding
   const headers = [
     ['', 'Last Name', 'First Name', 'Date of birth', 'Place of birth',
      'Nationality', 'Issue Date', 'Expiration Date', 'Pasp nr.', 'Rank', 'Remarks']
@@ -42,26 +39,22 @@ export function savePdf(boatName: string, crewRows: ListRow[], passengers: ListR
     ])
   }
 
-  // Passenger rows (fill empty to MIN_ROWS)
-  for (let i = 0; i < passengerSlots; i++) {
-    if (i < passengers.length) {
-      const r = passengers[i]
-      body.push([
-        String(r.seq),
-        r.lastName.toUpperCase(),
-        r.firstName.toUpperCase(),
-        fmtDate(r.dateOfBirth),
-        r.placeOfBirth.toUpperCase(),
-        r.nationality.toUpperCase(),
-        fmtDate(r.issueDate),
-        fmtDate(r.expirationDate),
-        r.passportNumber,
-        r.rank,
-        r.remark,
-      ])
-    } else {
-      body.push([String(i + 1), '', '', '', '', '', '', '', '', 'Passenger', ''])
-    }
+  // Passenger rows (only real data)
+  for (let i = 0; i < passengers.length; i++) {
+    const r = passengers[i]
+    body.push([
+      String(r.seq),
+      r.lastName.toUpperCase(),
+      r.firstName.toUpperCase(),
+      fmtDate(r.dateOfBirth),
+      r.placeOfBirth.toUpperCase(),
+      r.nationality.toUpperCase(),
+      fmtDate(r.issueDate),
+      fmtDate(r.expirationDate),
+      r.passportNumber,
+      r.rank,
+      r.remark,
+    ])
   }
 
   // Create landscape A4 PDF
@@ -69,22 +62,22 @@ export function savePdf(boatName: string, crewRows: ListRow[], passengers: ListR
 
   // Title
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(20)
+  doc.setFontSize(16)
   const pdfTitle = boatName
     ? `CREW AND PASSENGER LIST — ${boatName.toUpperCase()}`
     : 'CREW AND PASSENGER LIST'
-  doc.text(pdfTitle, 14, 15)
+  doc.text(pdfTitle, 10, 12)
 
-  // Table
+  // Table — compact sizing to fit up to 32 data rows on one page
   autoTable(doc, {
-    startY: 20,
+    startY: 16,
     head: headers,
     body: body,
     theme: 'grid',
     styles: {
       font: 'helvetica',
-      fontSize: 7,
-      cellPadding: 1.5,
+      fontSize: 6,
+      cellPadding: 1,
       lineColor: [0, 0, 0],
       lineWidth: 0.2,
       textColor: [0, 0, 0],
@@ -93,29 +86,29 @@ export function savePdf(boatName: string, crewRows: ListRow[], passengers: ListR
       fillColor: [255, 255, 255],
       textColor: [0, 0, 0],
       fontStyle: 'normal',
-      fontSize: 7,
+      fontSize: 6,
       lineWidth: 0.2,
     },
     columnStyles: {
-      0: { cellWidth: 8 },   // #
-      1: { cellWidth: 28 },  // Last Name
-      2: { cellWidth: 25 },  // First Name
-      3: { cellWidth: 22 },  // DOB
-      4: { cellWidth: 30 },  // Place of birth
-      5: { cellWidth: 25 },  // Nationality
-      6: { cellWidth: 22 },  // Issue Date
-      7: { cellWidth: 22 },  // Expiration Date
-      8: { cellWidth: 25 },  // Passport nr
-      9: { cellWidth: 25 },  // Rank
-      10: { cellWidth: 25 }, // Remarks
+      0: { cellWidth: 7 },   // #
+      1: { cellWidth: 27 },  // Last Name
+      2: { cellWidth: 24 },  // First Name
+      3: { cellWidth: 21 },  // DOB
+      4: { cellWidth: 28 },  // Place of birth
+      5: { cellWidth: 24 },  // Nationality
+      6: { cellWidth: 21 },  // Issue Date
+      7: { cellWidth: 21 },  // Expiration Date
+      8: { cellWidth: 24 },  // Passport nr
+      9: { cellWidth: 24 },  // Rank
+      10: { cellWidth: 24 }, // Remarks
     },
-    margin: { left: 14, right: 14 },
+    margin: { left: 10, right: 10 },
   })
 
   // Footer text
   const finalY = (doc as any).lastAutoTable?.finalY ?? 180
   doc.setFont('helvetica', 'normal')
-  doc.setFontSize(8)
+  doc.setFontSize(6)
   const footerLines = [
     'In adherence to article 15 (1) (a)(b)(c)(d) and article 15 (2) of the Toelatingsbesluit,',
     'The Captain or his/her Representative must present to the Immigration Officer all information',
@@ -123,7 +116,7 @@ export function savePdf(boatName: string, crewRows: ListRow[], passengers: ListR
     'This also includes persons disembarking and or embarking the vessel.',
   ]
   footerLines.forEach((line, i) => {
-    doc.text(line, 14, finalY + 5 + i * 4)
+    doc.text(line, 10, finalY + 4 + i * 3)
   })
 
   // Save — triggers download on mobile Safari
